@@ -192,29 +192,30 @@ pub fn render_image() {
     writeln!(&mut f, "{} {}", image_width, image_height).unwrap();
     writeln!(&mut f, "255").unwrap();
 
-    let world_fix = world;
+    let world = world;
 
     let t_all = SystemTime::now();
 
     for j in (0..image_height).rev() {
-        // println!("Progress: {:?} lines remaining", j);
-
         let t_line = SystemTime::now();
 
         let pixels: Vec<(Vector3<f32>, Duration)> = (0..image_width)
             .into_par_iter()
             .map(|i| {
                 let t_pixel = SystemTime::now();
-                let mut color: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
 
-                for _ in 0..samples_per_pixel {
-                    let u = (i as f32 + random_double(0.0, 1.0)) / (image_width - 1) as f32;
-                    let v = (j as f32 + random_double(0.0, 1.0)) / (image_height - 1) as f32;
-                    let r = &cam.ray(u, v);
-                    color += ray_color(&r, &world_fix, max_depth);
-                }
+                let color: Vector3<f32> = get_pixel_color(
+                    image_width,
+                    image_height,
+                    samples_per_pixel,
+                    &cam,
+                    &world,
+                    max_depth,
+                    i,
+                    j,
+                );
 
-                (color / samples_per_pixel as f32, t_pixel.elapsed().unwrap())
+                (color, t_pixel.elapsed().unwrap())
             })
             .collect();
 
@@ -223,21 +224,15 @@ pub fn render_image() {
         let t_line = t_line.elapsed().unwrap().as_micros();
 
         for (pix, duration) in pixels {
-            write!(
-                f,
-                "{} {} {}\n",
-                (pix.x.sqrt() * 255.0) as u8,
-                (pix.y.sqrt() * 255.0) as u8,
-                (pix.z.sqrt() * 255.0) as u8
-            )
-            .expect("Not written");
-
+            write_color(&mut f, &pix);
             pix_time += duration.as_micros();
         }
 
         println!(
-            "Remaining {j} - Render time: line {:?} | pix {pix_time} | ratio {:?}",
+            "Remaining {} - Render time: line {:?} | pix {:?} | ratio {:?}",
+            j - 1,
             t_line,
+            pix_time,
             pix_time as f32 / t_line as f32
         );
     }

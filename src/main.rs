@@ -9,6 +9,4 @@ mod sphere;
 
 fn main() {
     render_image();
-
-    println!("Hello, world!");
 }
