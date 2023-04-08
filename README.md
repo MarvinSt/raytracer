@@ -12,6 +12,8 @@ This is a personal project to learn `rust` and my first real project in `rust`. 
 
 # Todo
 
+Open tasks:
+
 - [ ] Create a more organized structure for the different scenes
 - [ ] Improve performance of writing the output image files
 - [ ] Continue with the implementations of Book 2
@@ -40,4 +42,29 @@ To speed up the rendering process, the raytracer is multithreaded, allowing us t
 
 Rayon is used for multithreading, we iterate over each line and map with a parallel iterator over each pixel per line. It was not possible to use a parallel for iterator for all pixels, hence why the parallel iterator is applied for each line.
 
+```rust
+for j in (0..image_height).rev() {
+    let pixels: Vec<Vector3<f32>> = (0..image_width).into_par_iter().map(|i| {
+        get_pixel_color(
+            image_width,
+            image_height,
+            samples_per_pixel,
+            &cam,
+            &world,
+            max_depth,
+            i,
+            j,
+        )
+    }).collect();
+
+    for pix in pixels {
+        write_color(&mut f, &pix);
+    }
+}
+```
+
+During my brief testing, I also tried calculating each sample per pixel in a seperate thread, but this did not yield any significant speed up. It could be that a single sample is very fast to evaluate with just a few objects in the scene and therefore the overhead of starting of managing the threads outweighs the benefits.
+
 # Output
+
+![render](./result.ppm)

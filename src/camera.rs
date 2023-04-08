@@ -13,7 +13,7 @@ pub struct Camera {
     lower_left_corner: Vector3<f32>,
     u: Vector3<f32>,
     v: Vector3<f32>,
-    w: Vector3<f32>,
+    // w: Vector3<f32>,
     lens_radius: f32,
 }
 
@@ -27,7 +27,7 @@ impl Camera {
         aperture: f32,
         focus_dist: f32,
     ) -> Self {
-        let focal_length = 1.0;
+        // let focal_length = 1.0;
         let theta: f32 = vfov / 180.0 * PI;
         let h: f32 = (theta / 2.0).tan();
         let viewport_height = 2.0 * h;
@@ -53,7 +53,7 @@ impl Camera {
             lower_left_corner: lower_left_corner,
             u: u,
             v: v,
-            w: w,
+            // w: w,
             lens_radius: lens_radius,
         }
     }

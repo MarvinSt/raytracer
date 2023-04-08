@@ -1,5 +1,6 @@
 use std::ops::Neg;
 
+use crate::bounding_box::AABB;
 use crate::hit::*;
 use crate::material::Material;
 use crate::ray::Ray;
@@ -22,6 +23,13 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
+    fn bounding_box(&self) -> Option<AABB> {
+        Some(AABB::new(
+            self.center - Vector3::new(self.radius, self.radius, self.radius),
+            self.center + Vector3::new(self.radius, self.radius, self.radius),
+        ))
+    }
+
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc: Vector3<f32> = r.origin() - self.center;
 

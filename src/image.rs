@@ -3,7 +3,7 @@ use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 // use rayon::prelude::*;
 use std::{
     fs::File,
-    io::Write,
+    io::{BufWriter, Write},
     time::{Duration, SystemTime},
 };
 
@@ -15,7 +15,7 @@ use crate::{
 };
 
 #[inline]
-pub fn write_color(f: &mut File, color: &Vector3<f32>) {
+pub fn write_color(f: &mut BufWriter<File>, color: &Vector3<f32>) {
     writeln!(
         f,
         "{} {} {}",
@@ -73,7 +73,7 @@ pub fn render_image() {
         lookfrom,
         lookat,
         Vector3::new(0.0, 1.0, 0.0),
-        20.0,
+        30.0,
         aspect_ratio,
         2.0 * 0.0,
         (lookfrom - lookat).magnitude(),
@@ -129,11 +129,11 @@ pub fn render_image() {
         0.5,
         mat_left,
     )));
-    // world.add(Box::new(Sphere::new(
-    //     Vector3::new(-1.0, 0.0, -1.0),
-    //     -0.45,
-    //     mat_left,
-    // )));
+    world.add(Box::new(Sphere::new(
+        Vector3::new(-1.0, 0.0, -1.0),
+        -0.40,
+        mat_left,
+    )));
 
     world.add(Box::new(Sphere::new(
         Vector3::new(1.0, 0.0, -1.0),
@@ -186,7 +186,8 @@ pub fn render_image() {
     }
 
     // generate output file
-    let mut f = File::create("result.ppm").unwrap();
+    // let mut f = File::create("result.ppm").unwrap();
+    let mut f = BufWriter::new(File::create("result.ppm").unwrap());
 
     writeln!(&mut f, "P3").unwrap();
     writeln!(&mut f, "{} {}", image_width, image_height).unwrap();
@@ -229,8 +230,8 @@ pub fn render_image() {
         }
 
         println!(
-            "Remaining {} - Render time: line {:?} | pix {:?} | ratio {:?}",
-            j - 1,
+            "Line No.# {} \t| Line Time {:?} [us] \t| Pix Time {:?} [us] \t| Ratio {:?}",
+            j,
             t_line,
             pix_time,
             pix_time as f32 / t_line as f32

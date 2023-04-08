@@ -42,8 +42,8 @@ impl Default for Material {
 
 fn near_zero(v: &Vector3<f32>) -> bool {
     // Return true if the vector is close to zero in all dimensions.
-    const s: f32 = 1e-8;
-    return (abs(v[0]) < s) && (abs(v[1]) < s) && (abs(v[2]) < s);
+    const S: f32 = 1e-8;
+    return (abs(v[0]) < S) && (abs(v[1]) < S) && (abs(v[2]) < S);
 }
 
 impl Material {
