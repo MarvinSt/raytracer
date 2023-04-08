@@ -67,4 +67,4 @@ During my brief testing, I also tried calculating each sample per pixel in a sep
 
 # Output
 
-![render](./result.ppm)
+![render](./result.png)

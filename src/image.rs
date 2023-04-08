@@ -1,11 +1,7 @@
+use image::Rgb;
 use nalgebra::Vector3;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
-// use rayon::prelude::*;
-use std::{
-    fs::File,
-    io::{BufWriter, Write},
-    time::{Duration, SystemTime},
-};
+use std::time::{Duration, SystemTime};
 
 use crate::{
     camera::Camera,
@@ -14,28 +10,15 @@ use crate::{
     sphere::Sphere,
 };
 
-#[inline]
-pub fn write_color(f: &mut BufWriter<File>, color: &Vector3<f32>) {
-    writeln!(
-        f,
-        "{} {} {}",
-        (color.x.sqrt() * 255.0) as u8,
-        (color.y.sqrt() * 255.0) as u8,
-        (color.z.sqrt() * 255.0) as u8
-    )
-    .unwrap();
-}
-
-#[inline]
 pub fn get_pixel_color(
-    image_width: u16,
-    image_height: u16,
+    image_width: u32,
+    image_height: u32,
     samples_per_pixel: u8,
     cam: &Camera,
     world: &World,
     max_depth: u8,
-    i: u16,
-    j: u16,
+    i: u32,
+    j: u32,
 ) -> Vector3<f32> {
     let mut color: Vector3<f32> = Vector3::default();
     // launch parallel iterator
@@ -52,24 +35,15 @@ pub fn get_pixel_color(
 }
 
 pub fn render_image() {
-    let samples_per_pixel = 100;
     let max_depth = 50;
+    let samples_per_pixel = 100;
 
     let aspect_ratio = 16.0 / 9.0;
-    let cam: Camera = Camera::new(
-        Vector3::new(-2.0, 2.0, 1.0),
-        Vector3::new(0.0, 0.0, -1.0),
-        Vector3::new(0.0, 1.0, 0.0),
-        90.0,
-        aspect_ratio,
-        0.0,
-        1.0,
-    );
 
-    let lookfrom: Vector3<f32> = Vector3::new(3.0, 3.0, 2.0);
     let lookat: Vector3<f32> = Vector3::new(0.0, 0.0, -1.0);
+    let lookfrom: Vector3<f32> = Vector3::new(3.0, 3.0, 2.0);
 
-    let cam: Camera = Camera::new(
+    let mut cam: Camera = Camera::new(
         lookfrom,
         lookat,
         Vector3::new(0.0, 1.0, 0.0),
@@ -79,69 +53,36 @@ pub fn render_image() {
         (lookfrom - lookat).magnitude(),
     );
 
-    // let cam: Camera = Camera::new(
-    //     Vector3::new(13.0, 2.0, 3.0),
-    //     Vector3::new(0.0, 0.0, 0.0),
-    //     Vector3::new(0.0, 1.0, 0.0),
-    //     20.0,
-    //     aspect_ratio,
-    //     0.0,
-    //     1.0,
-    // );
-
-    let image_width = 1200 as u16;
-    let image_height = (image_width as f32 / cam.aspect_ratio) as u16;
-
     let mut world = World::new();
-    // world.add(Box::new(Sphere::new(Vector3::new(1.0, -2.0, -5.0), 1.0)));
-    // world.add(Box::new(Sphere::new(Vector3::new(-1.0, -2.0, -5.0), 0.75)));
-    // world.add(Box::new(Sphere::new(Vector3::new(1.0, 1.0, -5.0), 1.75)));
-    // world.add(Box::new(Sphere::new(Vector3::new(-1.0, 1.0, -5.0), 0.75)));
 
     let mat_ground = Material::Lambertian {
         albedo: Vector3::new(0.8, 0.8, 0.0),
     };
+
     let mat_center = Material::Lambertian {
         albedo: Vector3::new(0.1, 0.2, 0.5),
     };
+
     let mat_left = Material::Dielectric {
         refraction_index: 1.5,
     };
+
     let mat_right = Material::Metal {
         albedo: Vector3::new(0.8, 0.6, 0.2),
         fuzz: 0.0,
     };
 
-    world.add(Box::new(Sphere::new(
-        Vector3::new(0.0, -100.5, -1.0),
-        100.0,
-        mat_ground,
-    )));
-
-    world.add(Box::new(Sphere::new(
-        Vector3::new(0.0, 0.0, -1.0),
-        0.5,
-        mat_center,
-    )));
-
-    world.add(Box::new(Sphere::new(
-        Vector3::new(-1.0, 0.0, -1.0),
-        0.5,
-        mat_left,
-    )));
-    world.add(Box::new(Sphere::new(
-        Vector3::new(-1.0, 0.0, -1.0),
-        -0.40,
-        mat_left,
-    )));
-
-    world.add(Box::new(Sphere::new(
-        Vector3::new(1.0, 0.0, -1.0),
-        0.5,
-        mat_right,
-    )));
-
     if false {
+        cam = Camera::new(
+            Vector3::new(13.0, 2.0, 3.0),
+            Vector3::new(0.0, 0.0, 0.0),
+            Vector3::new(0.0, 1.0, 0.0),
+            20.0,
+            aspect_ratio,
+            0.0,
+            1.0,
+        );
+
         let ground_material = Material::Lambertian {
             albedo: Vector3::new(0.5, 0.5, 0.5),
         };
@@ -183,20 +124,57 @@ pub fn render_image() {
             1.0,
             material3,
         )));
+    } else {
+        // cam = Camera::new(
+        //     Vector3::new(-2.0, 2.0, 1.0),
+        //     Vector3::new(0.0, 0.0, -1.0),
+        //     Vector3::new(0.0, 1.0, 0.0),
+        //     90.0,
+        //     aspect_ratio,
+        //     0.0,
+        //     1.0,
+        // );
+
+        world.add(Box::new(Sphere::new(
+            Vector3::new(0.0, -100.5, -1.0),
+            100.0,
+            mat_ground,
+        )));
+
+        world.add(Box::new(Sphere::new(
+            Vector3::new(0.0, 0.0, -1.0),
+            0.5,
+            mat_center,
+        )));
+
+        world.add(Box::new(Sphere::new(
+            Vector3::new(-1.0, 0.0, -1.0),
+            0.5,
+            mat_left,
+        )));
+
+        world.add(Box::new(Sphere::new(
+            Vector3::new(-1.0, 0.0, -1.0),
+            -0.40,
+            mat_left,
+        )));
+
+        world.add(Box::new(Sphere::new(
+            Vector3::new(1.0, 0.0, -1.0),
+            0.5,
+            mat_right,
+        )));
     }
 
     // generate output file
-    // let mut f = File::create("result.ppm").unwrap();
-    let mut f = BufWriter::new(File::create("result.ppm").unwrap());
+    let image_width = 1200 as u32;
+    let image_height = (image_width as f32 / cam.aspect_ratio) as u32;
 
-    writeln!(&mut f, "P3").unwrap();
-    writeln!(&mut f, "{} {}", image_width, image_height).unwrap();
-    writeln!(&mut f, "255").unwrap();
+    let mut buffer: image::RgbImage = image::ImageBuffer::new(image_width, image_height);
 
     let world = world;
 
     let t_all = SystemTime::now();
-
     for j in (0..image_height).rev() {
         let t_line = SystemTime::now();
 
@@ -220,12 +198,20 @@ pub fn render_image() {
             })
             .collect();
 
-        let mut pix_time = 0;
-
         let t_line = t_line.elapsed().unwrap().as_micros();
 
-        for (pix, duration) in pixels {
-            write_color(&mut f, &pix);
+        let mut pix_time = 0;
+        for x in 0..image_width {
+            let (pix, duration) = pixels[x as usize];
+            buffer.put_pixel(
+                x,
+                image_height - 1 - j,
+                Rgb([
+                    (pix.x.sqrt() * 255.0) as u8,
+                    (pix.y.sqrt() * 255.0) as u8,
+                    (pix.z.sqrt() * 255.0) as u8,
+                ]),
+            );
             pix_time += duration.as_micros();
         }
 
@@ -242,6 +228,8 @@ pub fn render_image() {
         "Render time: multi line {:?}",
         t_all.elapsed().unwrap().as_millis()
     );
+
+    buffer.save("result.png").unwrap();
 
     println!("\rDONE!");
 }
