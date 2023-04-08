@@ -67,4 +67,5 @@ During my brief testing, I also tried calculating each sample per pixel in a sep
 
 # Output
 
-![render](./result.png)
+![scene1](./result_1.png)
+![scene2](./result_1.png)
