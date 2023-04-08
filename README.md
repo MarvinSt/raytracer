@@ -68,4 +68,4 @@ During my brief testing, I also tried calculating each sample per pixel in a sep
 # Output
 
 ![scene1](./tests/result_1.png)
-![scene2](./tests/result_1.png)
+![scene2](./tests/result_2.png)
