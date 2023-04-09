@@ -1,4 +1,4 @@
-use crate::{bounding_box::AABB, material::*};
+use crate::{bhv::Bvh, bounding_box::AABB, material::*};
 use cgmath::num_traits::Float;
 use nalgebra::{Vector2, Vector3};
 use rand::Rng;
@@ -96,6 +96,13 @@ impl<'a> World {
     //     &self.objects
     // }
 
+    pub fn generate_bvh(self) -> World {
+        let bvh = Box::new(Bvh::new(self.objects));
+        let mut world = World::new();
+        world.add(bvh);
+        world
+    }
+
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut hit_record = None;
         let mut closest_hit = t_max;
@@ -110,28 +117,28 @@ impl<'a> World {
         hit_record
     }
 
-    pub fn bounding_box(&self) -> Option<AABB> {
-        if self.objects.is_empty() {
-            return None;
-        }
+    // pub fn bounding_box(&self) -> Option<AABB> {
+    //     if self.objects.is_empty() {
+    //         return None;
+    //     }
 
-        let mut output_box: AABB = AABB::default();
+    //     let mut output_box: AABB = AABB::default();
 
-        let mut first_box = true;
-        for obj in self.objects.iter() {
-            // let mut temp_box: AABB = AABB::default();
-            if let Some(temp_box) = obj.bounding_box() {
-                output_box = if first_box {
-                    temp_box
-                } else {
-                    AABB::surrounding_box(&output_box, &temp_box)
-                };
-                first_box = false;
-            }
-        }
+    //     let mut first_box = true;
+    //     for obj in self.objects.iter() {
+    //         // let mut temp_box: AABB = AABB::default();
+    //         if let Some(temp_box) = obj.bounding_box() {
+    //             output_box = if first_box {
+    //                 temp_box
+    //             } else {
+    //                 AABB::surrounding_box(&output_box, &temp_box)
+    //             };
+    //             first_box = false;
+    //         }
+    //     }
 
-        Some(output_box)
-    }
+    //     Some(output_box)
+    // }
 }
 
 pub fn ray_color(ray: &Ray, world: &World, depth: u8) -> Vector3<f32> {

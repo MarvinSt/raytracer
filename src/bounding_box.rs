@@ -21,8 +21,31 @@ impl AABB {
         self.max
     }
 
+    pub fn diff(&self) -> Vector3<f32> {
+        return self.max - self.min;
+    }
+
+    pub fn max_axis(&self) -> usize {
+        let diff = self.diff();
+        let cmp_a = diff[0] >= diff[1];
+        let cmp_b = diff[1] >= diff[2];
+        if cmp_a && cmp_b {
+            return 0;
+        } else {
+            if cmp_b {
+                return 1;
+            } else {
+                return 2;
+            }
+        }
+    }
+
     pub fn centroid(&self) -> Vector3<f32> {
         (self.min + self.max) * 0.5
+    }
+
+    pub fn sort_value_axis(&self, axis: usize) -> f32 {
+        self.min[axis] + self.max[axis]
     }
 
     pub fn surrounding_box(box0: &AABB, box1: &AABB) -> Self {
@@ -41,8 +64,24 @@ impl AABB {
         return AABB::new(small, big);
     }
 
+    pub fn extend_box(&self, aabb: &AABB) -> Self {
+        let small: Vector3<f32> = Vector3::new(
+            f32::min(self.min.x, aabb.min.x),
+            f32::min(self.min.y, aabb.min.y),
+            f32::min(self.min.z, aabb.min.z),
+        );
+
+        let big: Vector3<f32> = Vector3::new(
+            f32::max(self.max.x, aabb.max.x),
+            f32::max(self.max.y, aabb.max.y),
+            f32::max(self.max.z, aabb.max.z),
+        );
+
+        return AABB::new(small, big);
+    }
+
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<AABB> {
-        for i in 0..2 {
+        for i in 0..3 {
             let inv_dir = 1.0 / r.direction()[i];
             let mut t0 = (self.min[i] - r.origin()[i]) * inv_dir;
             let mut t1 = (self.max[i] - r.origin()[i]) * inv_dir;
@@ -60,8 +99,9 @@ impl AABB {
         Some(AABB::default())
     }
 
+    /*
     fn hit_ori(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<AABB> {
-        for i in 0..2 {
+        for i in 0..3 {
             let t0 = f32::min(
                 (self.min[i] - r.origin()[i]) / r.direction()[i],
                 (self.max[i] - r.origin()[i]) / r.direction()[i],
@@ -81,4 +121,5 @@ impl AABB {
 
         Some(AABB::default())
     }
+    */
 }

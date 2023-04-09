@@ -14,10 +14,10 @@ This is a personal project to learn `rust` and my first real project in `rust`. 
 
 Open tasks:
 
-- [ ] Create a more organized structure for the different scenes
+- [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
 - [x] Improve performance of writing the output image files
 - [ ] Continue with the implementations of Book 2
-- [ ] Implement bounding volume hierarchy tree to speed up large scene rendering
+- [x] Implement bounding volume hierarchy tree to speed up large scene rendering
 
 # Build and Run
 

@@ -172,7 +172,9 @@ pub fn render_image() {
 
     let mut buffer: image::RgbImage = image::ImageBuffer::new(image_width, image_height);
 
-    let world = world;
+    // This step wil convert the existing world to a BVH optimized immutable world
+    let world = world.generate_bvh();
+    // let world = world;
 
     let t_all = SystemTime::now();
     for j in (0..image_height).rev() {
@@ -182,7 +184,6 @@ pub fn render_image() {
             .into_par_iter()
             .map(|i| {
                 let t_pixel = SystemTime::now();
-
                 let color: Vector3<f32> = get_pixel_color(
                     image_width,
                     image_height,
