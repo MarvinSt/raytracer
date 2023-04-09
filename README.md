@@ -8,15 +8,16 @@ This project is a `rust` implementation of a cpu-based raytracer based on the se
 
 - [_Ray Tracing: The Rest of Your Life_](https://raytracing.github.io/books/RayTracingTheRestOfYourLife.html)
 
-This is a personal project to learn `rust` and my first real project in `rust`. As usual, some implementation hints from other similar projects were taken, but the work has been implementated mostly based on the original C++ implementation from the books.
+This is a personal project to learn `rust` and my first real project in `rust`. As usual, some implementation hints from other similar projects were taken, but the work has been implemented mostly based on the original C++ implementation from the books.
 
 # Todo
 
 Open tasks:
 
 - [ ] Create a more organized structure for the different scenes
-- [ ] Improve performance of writing the output image files
+- [x] Improve performance of writing the output image files
 - [ ] Continue with the implementations of Book 2
+- [ ] Implement bounding volume hierarchy tree to speed up large scene rendering
 
 # Build and Run
 
