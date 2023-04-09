@@ -25,11 +25,13 @@ pub fn random_double(min: f32, max: f32) -> f32 {
     rng.gen_range(min..max)
 }
 
+/*
 #[inline]
 pub fn random_int(min: u32, max: u32) -> u32 {
     let mut rng = rand::thread_rng();
     rng.gen_range(min..max)
 }
+*/
 
 #[inline]
 pub fn random_unit_vector() -> Vector3<f32> {

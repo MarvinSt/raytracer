@@ -13,6 +13,7 @@ impl AABB {
         Self { min: min, max: max }
     }
 
+    /*
     pub fn min(&self) -> Vector3<f32> {
         self.min
     }
@@ -20,6 +21,7 @@ impl AABB {
     pub fn max(&self) -> Vector3<f32> {
         self.max
     }
+    */
 
     pub fn diff(&self) -> Vector3<f32> {
         return self.max - self.min;
@@ -40,9 +42,11 @@ impl AABB {
         }
     }
 
+    /*
     pub fn centroid(&self) -> Vector3<f32> {
         (self.min + self.max) * 0.5
     }
+    */
 
     pub fn sort_value_axis(&self, axis: usize) -> f32 {
         self.min[axis] + self.max[axis]

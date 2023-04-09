@@ -1,14 +1,17 @@
-use crate::image::render_image;
+use renderer::render;
+use scene::build_scene;
 
 mod bhv;
 mod bounding_box;
 mod camera;
 mod hit;
-mod image;
 mod material;
 mod ray;
+mod renderer;
+mod scene;
 mod sphere;
 
 fn main() {
-    render_image();
+    let (cam, world) = build_scene();
+    render(&cam, &world);
 }
