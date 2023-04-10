@@ -16,12 +16,12 @@ Open tasks:
 
 - [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
 - [ ] Continue with the implementations of Book 2
-- [x] Implement bounding volume hierarchy tree to speed up large scene rendering
-- [ ] Implement texture support for Lambert material:
-    - [ ] Rewrite all materials types as trait instead of enum
-    - [x] Implement solid color and checker material
-    - [ ] Implement image texture
-- [ ] Implement light emitting material
+    - [x] Implement bounding volume hierarchy tree to speed up large scene rendering
+    - [x] Implement texture support for Lambert material:
+        - [x] Rewrite all materials types as trait instead of enum
+        - [x] Implement solid color and checker material
+        - [x] Implement image texture
+    - [ ] Implement light emitting material
 - [ ] Implement additional tests for material functions
 # Build and Run
 
@@ -72,6 +72,10 @@ During my brief testing, I also tried calculating each sample per pixel in a sep
 
 # Output
 
+Scenes with spheres of different materials (Dielectric, Lambertian and Metal)
 ![scene1](./tests/result_1.png)
 ![scene2](./tests/result_2.png)
+Dense scene with checkerboard ground material
 ![scene3](./tests/result_3.png)
+Sphere with globe image texture
+![scene4](./tests/result_4.png)

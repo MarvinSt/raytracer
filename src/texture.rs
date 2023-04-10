@@ -1,6 +1,7 @@
 use crate::hit::{random_double, random_int, random_unit_vector};
 use core::array::from_fn;
-use nalgebra::Vector3;
+use image::{open, ImageBuffer, Rgb};
+use nalgebra::{clamp, Vector3};
 
 pub trait Texture: Sync {
     fn value(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32>;
@@ -47,6 +48,56 @@ impl<T: Texture, U: Texture> Texture for Checker<T, U> {
         }
     }
 }
+
+#[derive(Clone)]
+pub struct Image {
+    data: ImageBuffer<Rgb<u8>, Vec<u8>>,
+    width: u32,
+    height: u32,
+}
+
+impl Image {
+    pub fn new(path: &str) -> Image {
+        let data = open(path).unwrap_or_default().into_rgb8();
+        let (width, height) = (data.width(), data.height());
+        Image {
+            data,
+            width,
+            height,
+        }
+    }
+}
+
+impl Texture for Image {
+    fn value(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
+        // If we have no texture data, then return solid cyan as a debugging aid.
+        if self.data.len() == 0 {
+            return Vector3::new(0.0, 1.0, 1.0);
+        }
+
+        // Clamp input texture coordinates to [0,1] x [1,0]
+        let u = clamp(u, 0.0, 1.0);
+        let v = 1.0 - clamp(v, 0.0, 1.0); // Flip V to image coordinates
+
+        let i = ((u * self.width as f32) as u32).min(self.width - 1);
+        let j = ((v * self.height as f32) as u32).min(self.height - 1);
+
+        let pixel = self.data.get_pixel(i, j);
+        const COLOR_SCALE: f32 = 1.0 / 255.0;
+
+        Vector3::new(
+            COLOR_SCALE * pixel.0[0] as f32,
+            COLOR_SCALE * pixel.0[1] as f32,
+            COLOR_SCALE * pixel.0[2] as f32,
+        )
+    }
+}
+
+/*
+unsigned char *data;
+        int width, height;
+        int bytes_per_scanline;
+ */
 
 #[derive(Copy, Clone)]
 pub struct Noise {
