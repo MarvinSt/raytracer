@@ -15,10 +15,14 @@ This is a personal project to learn `rust` and my first real project in `rust`. 
 Open tasks:
 
 - [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
-- [x] Improve performance of writing the output image files
 - [ ] Continue with the implementations of Book 2
 - [x] Implement bounding volume hierarchy tree to speed up large scene rendering
-
+- [ ] Implement texture support for Lambert material:
+    - [ ] Rewrite all materials types as trait instead of enum
+    - [x] Implement solid color and checker material
+    - [ ] Implement image texture
+- [ ] Implement light emitting material
+- [ ] Implement additional tests for material functions
 # Build and Run
 
 The project can be built and executed using `cargo`.
@@ -70,3 +74,4 @@ During my brief testing, I also tried calculating each sample per pixel in a sep
 
 ![scene1](./tests/result_1.png)
 ![scene2](./tests/result_2.png)
+![scene3](./tests/result_3.png)

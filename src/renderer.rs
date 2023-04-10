@@ -11,7 +11,7 @@ use crate::{
 pub fn get_pixel_color(
     image_width: u32,
     image_height: u32,
-    samples_per_pixel: u8,
+    samples_per_pixel: u16,
     cam: &Camera,
     world: &World,
     max_depth: u8,
@@ -34,7 +34,7 @@ pub fn get_pixel_color(
 
 pub fn render(cam: &Camera, world: &World) {
     let max_depth = 50;
-    let samples_per_pixel = 100;
+    let samples_per_pixel = 50;
 
     // generate output buffer
     let image_width = 1200 as u32;

@@ -1,76 +1,127 @@
-use crate::{bhv::Bvh, bounding_box::AABB, material::*};
-use cgmath::num_traits::Float;
+use crate::{bhv::Bvh, bounding_box::AABB, material::*, ray::Ray};
 use nalgebra::{Vector2, Vector3};
 use rand::Rng;
-
-use crate::ray::Ray;
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
     fn bounding_box(&self) -> Option<AABB>;
 }
 
-#[derive(Copy, Clone, Default)]
-pub struct HitRecord {
+#[derive(Copy, Clone)]
+pub struct HitRecord<'a> {
     pub p: Vector3<f32>,
     pub n: Vector3<f32>,
     pub t: f32,
-    pub m: Material,
+    pub u: f32,
+    pub v: f32,
+    pub m: &'a dyn Material,
     pub front_face: bool,
 }
 
-#[inline]
+// #[inline]
 pub fn random_double(min: f32, max: f32) -> f32 {
     let mut rng = rand::thread_rng();
-    rng.gen_range(min..max)
+    rng.gen_range(min..max) as f32
 }
 
-/*
-#[inline]
+// #[inline]
 pub fn random_int(min: u32, max: u32) -> u32 {
     let mut rng = rand::thread_rng();
     rng.gen_range(min..max)
 }
-*/
 
-#[inline]
-pub fn random_unit_vector() -> Vector3<f32> {
-    const MIN: f32 = -1.0;
+// #[inline]
+pub fn random_color_vector() -> Vector3<f32> {
+    const MIN: f32 = 0.0;
     const MAX: f32 = 1.0;
 
     let mut rng = rand::thread_rng();
 
     Vector3::new(
-        rng.gen_range(MIN..MAX),
-        rng.gen_range(MIN..MAX),
-        rng.gen_range(MIN..MAX),
+        rng.gen_range(MIN..=MAX),
+        rng.gen_range(MIN..=MAX),
+        rng.gen_range(MIN..=MAX),
     )
-    .normalize()
 }
 
-#[inline]
-pub fn random_unit_circle() -> Vector2<f32> {
+// #[inline]
+pub fn random_unit_vector() -> Vector3<f32> {
+    random_in_unit_sphere().normalize()
+    /*
+    let mut rng = rand::thread_rng();
+
+    let scl1: f32 = f32::sqrt(2.0) / 2.0;
+    let scl2: f32 = f32::sqrt(2.0) * 2.0;
+
+    // unitrand in [-1,1].
+    let u = scl1 * rng.gen::<f32>();
+    let v = scl1 * rng.gen::<f32>();
+    let w = scl2 * f32::sqrt(1.0 - u * u - v * v);
+
+    let x = w * u;
+    let y = w * v;
+    let z = 1.0 - 2.0 * (u * u + v * v);
+
+    Vector3::new(x, y, z)
+    */
+}
+
+// #[inline]
+pub fn random_in_unit_circle() -> Vector2<f32> {
+    let mut rng = rand::thread_rng();
+    let unit: Vector2<f32> = Vector2::new(1.0, 1.0);
+    loop {
+        let p: Vector2<f32> = 2.0 * Vector2::new(rng.gen::<f32>(), rng.gen::<f32>()) - unit;
+        if p.dot(&p) < 1.0 {
+            return p;
+        }
+    }
+}
+
+// #[inline]
+pub fn random_in_unit_sphere() -> Vector3<f32> {
+    let mut rng = rand::thread_rng();
+    let unit: Vector3<f32> = Vector3::new(1.0, 1.0, 1.0);
+    loop {
+        let p: Vector3<f32> =
+            2.0 * Vector3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) - unit;
+        if p.dot(&p) < 1.0 {
+            return p;
+        }
+    }
+
+    /*
+    let mut rng = rand::thread_rng();
+
+    // let scl1: f32 = f32::sqrt(2.0) / 2.0;
+    // let scl2: f32 = f32::sqrt(2.0) * 2.0;
+
+    // // unitrand in [-1,1].
+    // let u = scl1 * rng.gen::<f32>();
+    // let v = scl1 * rng.gen::<f32>();
+    // let w = scl2 * f32::sqrt(1.0 - u * u - v * v);
+
+    // let x = w * u;
+    // let y = w * v;
+    // let z = 1.0 - 2.0 * (u * u + v * v);
+
+    // Vector3::new(x, y, z);
+
     const MIN: f32 = -1.0;
     const MAX: f32 = 1.0;
 
-    let mut rng = rand::thread_rng();
+    loop {
+        let vec: Vector3<f32> = Vector3::new(
+            rng.gen_range(MIN..MAX),
+            rng.gen_range(MIN..MAX),
+            rng.gen_range(MIN..MAX),
+        );
 
-    Vector2::new(rng.gen_range(MIN..MAX), rng.gen_range(MIN..MAX))
-        / ((1.0 * 1.0 + 1.0 * 1.0).sqrt())
-}
-
-#[inline]
-pub fn random_unit_sphere() -> Vector3<f32> {
-    const MIN: f32 = -1.0;
-    const MAX: f32 = 1.0;
-
-    let mut rng = rand::thread_rng();
-
-    Vector3::new(
-        rng.gen_range(MIN..MAX),
-        rng.gen_range(MIN..MAX),
-        rng.gen_range(MIN..MAX),
-    ) / ((1.0 * 1.0 + 1.0 * 1.0 + 1.0 * 1.0).sqrt())
+        if vec.dot(&vec) < 1.0 {
+            return vec;
+        }
+    }
+    */
 }
 
 // #[derive(Sync)]
@@ -118,29 +169,6 @@ impl<'a> World {
 
         hit_record
     }
-
-    // pub fn bounding_box(&self) -> Option<AABB> {
-    //     if self.objects.is_empty() {
-    //         return None;
-    //     }
-
-    //     let mut output_box: AABB = AABB::default();
-
-    //     let mut first_box = true;
-    //     for obj in self.objects.iter() {
-    //         // let mut temp_box: AABB = AABB::default();
-    //         if let Some(temp_box) = obj.bounding_box() {
-    //             output_box = if first_box {
-    //                 temp_box
-    //             } else {
-    //                 AABB::surrounding_box(&output_box, &temp_box)
-    //             };
-    //             first_box = false;
-    //         }
-    //     }
-
-    //     Some(output_box)
-    // }
 }
 
 pub fn ray_color(ray: &Ray, world: &World, depth: u8) -> Vector3<f32> {

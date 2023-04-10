@@ -6,14 +6,14 @@ use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 
-pub struct Sphere {
+pub struct Sphere<M: Material> {
     center: Vector3<f32>,
     radius: f32,
-    material: Material,
+    material: M,
 }
 
-impl Sphere {
-    pub fn new(center: Vector3<f32>, radius: f32, material: Material) -> Self {
+impl<M: Material> Sphere<M> {
+    pub fn new(center: Vector3<f32>, radius: f32, material: M) -> Self {
         Self {
             center,
             radius,
@@ -22,7 +22,24 @@ impl Sphere {
     }
 }
 
-impl Hittable for Sphere {
+fn get_uv(p: &Vector3<f32>) -> (f32, f32) {
+    // p: a given point on the sphere of radius one, centered at the origin.
+    // u: returned value [0,1] of angle around the Y axis from X=-1.
+    // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+    //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+    //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+    //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+    let theta = f32::acos(-p.y);
+    let phi = f32::atan2(-p.z, p.x) + std::f32::consts::PI;
+
+    let u = phi / (2.0 * std::f32::consts::PI);
+    let v = theta / std::f32::consts::PI;
+
+    (u, v)
+}
+
+impl<M: Material> Hittable for Sphere<M> {
     fn bounding_box(&self) -> Option<AABB> {
         Some(AABB::new(
             self.center - Vector3::new(self.radius, self.radius, self.radius),
@@ -59,13 +76,18 @@ impl Hittable for Sphere {
         let n: Vector3<f32> = (p - self.center) / self.radius;
         let f: bool = r.direction().dot(&n) < 0.0;
 
+        // get uv's
+        let (u, v) = get_uv(&p);
+
         // update hit record
         Some(HitRecord {
             t: root,
             p: p,
             n: if f { n } else { n.neg() },
-            m: self.material,
+            m: &self.material,
             front_face: f,
+            u,
+            v,
         })
     }
 }

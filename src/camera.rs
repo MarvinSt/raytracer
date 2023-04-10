@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use nalgebra::{Vector2, Vector3};
 
-use crate::{hit::random_unit_circle, ray::Ray};
+use crate::{hit::random_in_unit_circle, ray::Ray};
 
 pub struct Camera {
     // focal_length: f32,
@@ -59,7 +59,7 @@ impl Camera {
     }
 
     pub fn ray(&self, u: f32, v: f32) -> Ray {
-        let rd: Vector2<f32> = self.lens_radius * random_unit_circle();
+        let rd: Vector2<f32> = self.lens_radius * random_in_unit_circle();
         let offset: Vector3<f32> = self.u * rd.x + self.v * rd.y;
 
         Ray::new(
