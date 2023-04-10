@@ -27,7 +27,7 @@ pub fn random_double(min: f32, max: f32) -> f32 {
 // #[inline]
 pub fn random_int(min: u32, max: u32) -> u32 {
     let mut rng = rand::thread_rng();
-    rng.gen_range(min..max)
+    rng.gen_range(min..=max)
 }
 
 // #[inline]

@@ -1,5 +1,3 @@
-use std::ops::Neg;
-
 use crate::bounding_box::AABB;
 use crate::hit::*;
 use crate::material::Material;
@@ -22,21 +20,23 @@ impl<M: Material> Sphere<M> {
     }
 }
 
-fn get_uv(p: &Vector3<f32>) -> (f32, f32) {
-    // p: a given point on the sphere of radius one, centered at the origin.
-    // u: returned value [0,1] of angle around the Y axis from X=-1.
-    // v: returned value [0,1] of angle from Y=-1 to Y=+1.
-    //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
-    //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
-    //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+impl<M: Material> Sphere<M> {
+    fn get_uv(p: &Vector3<f32>) -> (f32, f32) {
+        // p: a given point on the sphere of radius one, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
 
-    let theta = f32::acos(-p.y);
-    let phi = f32::atan2(-p.z, p.x) + std::f32::consts::PI;
+        let theta = f32::acos(-p.y);
+        let phi = f32::atan2(-p.z, p.x) + std::f32::consts::PI;
 
-    let u = phi / (2.0 * std::f32::consts::PI);
-    let v = theta / std::f32::consts::PI;
+        let u = phi / (2.0 * std::f32::consts::PI);
+        let v = theta / std::f32::consts::PI;
 
-    (u, v)
+        (u, v)
+    }
 }
 
 impl<M: Material> Hittable for Sphere<M> {
@@ -77,13 +77,13 @@ impl<M: Material> Hittable for Sphere<M> {
         let f: bool = r.direction().dot(&n) < 0.0;
 
         // get uv's
-        let (u, v) = get_uv(&p);
+        let (u, v) = Sphere::<M>::get_uv(&p);
 
         // update hit record
         Some(HitRecord {
             t: root,
             p: p,
-            n: if f { n } else { n.neg() },
+            n: if f { n } else { -n },
             m: &self.material,
             front_face: f,
             u,

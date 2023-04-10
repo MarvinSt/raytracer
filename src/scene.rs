@@ -3,7 +3,7 @@ use crate::{
     hit::{random_color_vector, random_double, World},
     material::{Dielectric, Lambertian, Metal},
     sphere::Sphere,
-    texture::{Checker, SolidColor},
+    texture::{Checker, Noise, SolidColor},
 };
 use nalgebra::Vector3;
 
@@ -148,5 +148,39 @@ pub fn build_scene() -> (Camera, World) {
     )));
 
     // (cam, world)
+    (cam, world.generate_bvh())
+}
+
+pub fn two_perlin_spheres() -> (Camera, World) {
+    let aspect_ratio = 16.0 / 9.0;
+
+    let lookat: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
+    let lookfrom: Vector3<f32> = Vector3::new(13.0, 2.0, 3.0);
+
+    let cam: Camera = Camera::new(
+        lookfrom,
+        lookat,
+        Vector3::new(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio,
+        0.0,
+        (lookfrom - lookat).magnitude(),
+    );
+
+    let mut world = World::new();
+
+    let mat = Lambertian::new(Noise::new(4.0));
+    world.add(Box::new(Sphere::new(
+        Vector3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        mat.clone(),
+    )));
+
+    world.add(Box::new(Sphere::new(
+        Vector3::new(0.0, 2.0, 0.0),
+        2.0,
+        mat.clone(),
+    )));
+
     (cam, world.generate_bvh())
 }
