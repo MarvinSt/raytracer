@@ -21,7 +21,9 @@ Open tasks:
         - [x] Rewrite all materials types as trait instead of enum
         - [x] Implement solid color and checker material
         - [x] Implement image texture
-    - [ ] Implement light emitting material
+    - [x] Implement light emitting material
+    - [x] Box and plane geometry
+    - [ ] Instancing (rotation/translation)
 - [ ] Implement additional tests for material functions
 # Build and Run
 
