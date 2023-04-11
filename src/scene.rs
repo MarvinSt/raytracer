@@ -1,13 +1,13 @@
 use crate::{
     camera::Camera,
+    geometry::{cube::Cube, rectangle::RectAA, sphere::Sphere},
     hit::{random_color_vector, random_double, World},
-    material::{Dielectric, Lambertian, Metal},
-    sphere::Sphere,
-    texture::{Checker, Image, Noise, SolidColor, Texture},
+    material::{Dielectric, DiffuseLight, Lambertian, Metal},
+    texture::{Checker, Image, Noise, SolidColor},
 };
 use nalgebra::Vector3;
 
-pub fn random_scene() -> (Camera, World) {
+fn random_scene() -> (Camera, World, Vector3<f32>) {
     let aspect_ratio = 16.0 / 9.0;
 
     let lookfrom: Vector3<f32> = Vector3::new(13.0, 2.0, 3.0);
@@ -29,10 +29,6 @@ pub fn random_scene() -> (Camera, World) {
     let even = SolidColor::new(0.9, 0.9, 0.9);
     let checker = Checker::new(odd, even);
     let ground_material = Lambertian::new(checker);
-
-    //  {
-    //     albedo: checker, // Texture::solid_color(0.5, 0.5, 0.5),
-    // };
 
     world.add(Box::new(Sphere::new(
         Vector3::new(0.0, -1000.0, 0.0),
@@ -88,10 +84,12 @@ pub fn random_scene() -> (Camera, World) {
     world.add(Box::new(Sphere::new(Vector3::new(4.0, 1.0, 0.0), 1.0, mat)));
 
     // (cam, world)
-    (cam, world.generate_bvh())
+    let background = Vector3::new(0.70, 0.80, 1.00);
+
+    (cam, world.generate_bvh(), background)
 }
 
-pub fn build_scene() -> (Camera, World) {
+fn three_spheres() -> (Camera, World, Vector3<f32>) {
     let aspect_ratio = 16.0 / 9.0;
 
     let lookat: Vector3<f32> = Vector3::new(0.0, 0.0, -1.0);
@@ -148,10 +146,12 @@ pub fn build_scene() -> (Camera, World) {
     )));
 
     // (cam, world)
-    (cam, world.generate_bvh())
+    let background = Vector3::new(0.70, 0.80, 1.00);
+
+    (cam, world.generate_bvh(), background)
 }
 
-pub fn two_perlin_spheres() -> (Camera, World) {
+fn two_perlin_spheres() -> (Camera, World, Vector3<f32>) {
     let aspect_ratio = 16.0 / 9.0;
 
     let lookat: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
@@ -182,10 +182,12 @@ pub fn two_perlin_spheres() -> (Camera, World) {
         mat.clone(),
     )));
 
-    (cam, world.generate_bvh())
+    let background = Vector3::new(0.70, 0.80, 1.00);
+
+    (cam, world.generate_bvh(), background)
 }
 
-pub fn earth() -> (Camera, World) {
+fn earth() -> (Camera, World, Vector3<f32>) {
     let aspect_ratio = 16.0 / 9.0;
 
     let lookat: Vector3<f32> = Vector3::new(0.0, 0.0, 0.0);
@@ -211,5 +213,113 @@ pub fn earth() -> (Camera, World) {
         mat.clone(),
     )));
 
-    (cam, world.generate_bvh())
+    let background = Vector3::new(0.70, 0.80, 1.00);
+
+    (cam, world.generate_bvh(), background)
+}
+
+fn cornell_box() -> (Camera, World, Vector3<f32>) {
+    let aspect_ratio = 1.0;
+
+    let lookat: Vector3<f32> = Vector3::new(278.0, 278.0, 0.0);
+    let lookfrom: Vector3<f32> = Vector3::new(278.0, 278.0, -800.0);
+
+    let cam: Camera = Camera::new(
+        lookfrom,
+        lookat,
+        Vector3::new(0.0, 1.0, 0.0),
+        40.0,
+        aspect_ratio,
+        0.0,
+        (lookfrom - lookat).magnitude(),
+    );
+
+    let mut world = World::new();
+
+    let red = Lambertian::new(SolidColor::new(0.65, 0.05, 0.05));
+    let white = Lambertian::new(SolidColor::new(0.73, 0.73, 0.73));
+    let green = Lambertian::new(SolidColor::new(0.12, 0.45, 0.15));
+    let light = DiffuseLight::new(SolidColor::new(15.0, 15.0, 15.0));
+
+    world.add(Box::new(RectAA::yz(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        green.clone(),
+    )));
+
+    world.add(Box::new(RectAA::yz(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+    )));
+
+    world.add(Box::new(RectAA::xz(
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+        light.clone(),
+    )));
+
+    world.add(Box::new(RectAA::xz(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+
+    world.add(Box::new(RectAA::xz(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+
+    world.add(Box::new(RectAA::xy(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        white.clone(),
+    )));
+
+    world.add(Box::new(Cube::new(
+        Vector3::new(130.0, 0.0, 65.0),
+        Vector3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    )));
+
+    world.add(Box::new(Cube::new(
+        Vector3::new(265.0, 0.0, 295.0),
+        Vector3::new(430.0, 330.0, 460.0),
+        white.clone(),
+    )));
+
+    let background = Vector3::new(0.0, 0.0, 0.0);
+
+    (cam, world.generate_bvh(), background)
+}
+
+pub fn select_scene(i: usize) -> (Camera, World, Vector3<f32>) {
+    match i {
+        0 => three_spheres(),
+        1 => random_scene(),
+        2 => two_perlin_spheres(),
+        3 => two_perlin_spheres(),
+        4 => earth(),
+        5 => cornell_box(),
+        _ => three_spheres(),
+    }
 }

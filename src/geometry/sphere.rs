@@ -72,22 +72,25 @@ impl<M: Material> Hittable for Sphere<M> {
         }
 
         // precalculate outputs
-        let p: Vector3<f32> = r.point_at(root);
-        let n: Vector3<f32> = (p - self.center) / self.radius;
-        let f: bool = r.direction().dot(&n) < 0.0;
-        let on: Vector3<f32> = if f { n } else { -n };
-        // get uv's
+        let t = root;
+        let p: Vector3<f32> = r.point_at(t);
+        let on: Vector3<f32> = (p - self.center) / self.radius;
+
+        // get uv coordinates
         let (u, v) = Sphere::<M>::get_uv(&on);
 
-        // update hit record
-        Some(HitRecord {
-            t: root,
-            p: p,
+        let mut h = HitRecord {
+            t,
+            p,
             n: on,
             m: &self.material,
-            front_face: f,
+            front_face: false,
             u,
             v,
-        })
+        };
+
+        h.set_face_normal(r, &on);
+
+        Some(h)
     }
 }

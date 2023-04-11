@@ -1,7 +1,6 @@
-use std::ops::Neg;
-
 use cgmath::num_traits::abs;
 use nalgebra::Vector3;
+use std::ops::Neg;
 
 use crate::{
     hit::{random_double, random_in_unit_sphere, random_unit_vector, HitRecord},
@@ -45,6 +44,10 @@ pub trait Material: Sync {
         attenuation: &mut Vector3<f32>,
         scattered: &mut Ray,
     ) -> bool;
+
+    fn emitted(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
+        Vector3::new(0.0, 0.0, 0.0)
+    }
 }
 
 #[test]
@@ -55,21 +58,6 @@ fn test_reflectance() {
     let actual = reflectance(cosine, ref_idx);
     assert_eq!(actual, expected);
 }
-
-// #[derive(Copy, Clone)]
-// pub enum Material {
-//     Lambertian {
-//         albedo: Box<dyn Texture>,
-//     },
-//     Metal {
-//         albedo: Box<dyn Texture>,
-//         fuzz: f32,
-//     },
-//     Dielectric {
-//         // albedo: Vector3<f32>,
-//         refraction_index: f32,
-//     },
-// }
 
 #[derive(Clone)]
 pub struct Lambertian<T: Texture> {
@@ -168,5 +156,32 @@ impl Material for Dielectric {
         }
         *scattered = Ray::new(rec.p, direction);
         return true;
+    }
+}
+
+#[derive(Clone)]
+pub struct DiffuseLight<T: Texture> {
+    emit: T,
+}
+
+impl<T: Texture> DiffuseLight<T> {
+    pub fn new(emit: T) -> Self {
+        DiffuseLight { emit }
+    }
+}
+
+impl<T: Texture> Material for DiffuseLight<T> {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut Vector3<f32>,
+        scattered: &mut Ray,
+    ) -> bool {
+        false
+    }
+
+    fn emitted(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
+        self.emit.value(u, v, p)
     }
 }

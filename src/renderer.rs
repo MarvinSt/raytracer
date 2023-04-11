@@ -5,7 +5,8 @@ use std::time::{Duration, SystemTime};
 
 use crate::{
     camera::Camera,
-    hit::{random_double, ray_color, World},
+    hit::{random_double, World},
+    ray::ray_color,
 };
 
 pub fn get_pixel_color(
@@ -14,6 +15,7 @@ pub fn get_pixel_color(
     samples_per_pixel: u16,
     cam: &Camera,
     world: &World,
+    background: &Vector3<f32>,
     max_depth: u8,
     i: u32,
     j: u32,
@@ -26,18 +28,18 @@ pub fn get_pixel_color(
         let v = (j as f32 + random_double(0.0, 1.0)) / (image_height - 1) as f32;
 
         // Return the colour (note lack of semicolon)
-        color += ray_color(&cam.ray(u, v), &world, max_depth);
+        color += ray_color(&cam.ray(u, v), background, &world, max_depth);
     }
 
     color / samples_per_pixel as f32
 }
 
-pub fn render(cam: &Camera, world: &World) {
+pub fn render(cam: &Camera, world: &World, background: &Vector3<f32>) {
     let max_depth = 50;
-    let samples_per_pixel = 50;
+    let samples_per_pixel = 200;
 
     // generate output buffer
-    let image_width = 1200 as u32;
+    let image_width = 600 as u32;
     let image_height = (image_width as f32 / cam.aspect_ratio) as u32;
     let mut buffer: image::RgbImage = image::ImageBuffer::new(image_width, image_height);
 
@@ -55,6 +57,7 @@ pub fn render(cam: &Camera, world: &World) {
                     samples_per_pixel,
                     &cam,
                     &world,
+                    &background,
                     max_depth,
                     i,
                     j,
