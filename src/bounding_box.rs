@@ -13,7 +13,6 @@ impl AABB {
         Self { min: min, max: max }
     }
 
-    /*
     pub fn min(&self) -> Vector3<f32> {
         self.min
     }
@@ -21,7 +20,6 @@ impl AABB {
     pub fn max(&self) -> Vector3<f32> {
         self.max
     }
-    */
 
     pub fn diff(&self) -> Vector3<f32> {
         return self.max - self.min;

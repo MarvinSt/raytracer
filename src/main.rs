@@ -5,6 +5,7 @@ mod bhv;
 mod bounding_box;
 mod camera;
 mod hit;
+mod instance;
 mod material;
 mod noise;
 mod ray;

@@ -23,7 +23,8 @@ Open tasks:
         - [x] Implement image texture
     - [x] Implement light emitting material
     - [x] Box and plane geometry
-    - [ ] Instancing (rotation/translation)
+    - [x] Instancing (rotation/translation)
+    - [ ] Medium and volumes
 - [ ] Implement additional tests for material functions
 # Build and Run
 

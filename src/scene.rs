@@ -2,6 +2,7 @@ use crate::{
     camera::Camera,
     geometry::{cube::Cube, rectangle::RectAA, sphere::Sphere},
     hit::{random_color_vector, random_double, World},
+    instance::{Rotate, Translate},
     material::{Dielectric, DiffuseLight, Lambertian, Metal},
     texture::{Checker, Image, Noise, SolidColor},
 };
@@ -295,17 +296,25 @@ fn cornell_box() -> (Camera, World, Vector3<f32>) {
         white.clone(),
     )));
 
-    world.add(Box::new(Cube::new(
-        Vector3::new(130.0, 0.0, 65.0),
-        Vector3::new(295.0, 165.0, 230.0),
+    let cube = Cube::new(
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(165.0, 330.0, 165.0),
         white.clone(),
-    )));
+    );
+    let cube = Rotate::new(cube, 15.0);
+    let cube = Translate::new(cube, Vector3::new(265.0, 0.0, 295.0));
 
-    world.add(Box::new(Cube::new(
-        Vector3::new(265.0, 0.0, 295.0),
-        Vector3::new(430.0, 330.0, 460.0),
+    world.add(Box::new(cube));
+
+    let cube = Cube::new(
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(165.0, 165.0, 165.0),
         white.clone(),
-    )));
+    );
+    let cube = Rotate::new(cube, -18.0);
+    let cube = Translate::new(cube, Vector3::new(130.0, 0.0, 65.0));
+
+    world.add(Box::new(cube));
 
     let background = Vector3::new(0.0, 0.0, 0.0);
 
