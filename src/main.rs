@@ -21,16 +21,17 @@ mod geometry {
 }
 
 fn main() {
-    // for i in 0..=8 {
-    //     let (cam, world, background) = select_scene(i);
-    //     let path = format!("./tests/new_result_{}.png", i);
-    //     render(&cam, &world, &background, &path);
-    // }
+    let samples_per_pixel = 1000;
 
-    for i in 7..=7 {
+    for i in 0..=8 {
         let (cam, world, background) = select_scene(i);
-        let path = format!("./tests/new_result_{}.png", i);
-        let samples_per_pixel = 200;
+        let path = format!("./tests/result_{}.png", i);
         render(&cam, &world, &background, &path, samples_per_pixel);
     }
+
+    // let i = 8;
+    // let (cam, world, background) = select_scene(i);
+    // let path = format!("./tests/new_result_{}.png", i);
+    // let samples_per_pixel = 100;
+    // render(&cam, &world, &background, &path, samples_per_pixel);
 }

@@ -235,12 +235,12 @@ fn simple_light() -> (Camera, World, Vector3<f32>) {
 
     let mut world = World::new();
 
-    let boundary = Sphere::new(Vector3::new(0.0, 0.0, 0.0), 250.0, Dielectric::new(1.0));
-    world.push(Constant::new(
-        boundary,
-        0.01,
-        SolidColor::new(1.0, 0.0, 0.0),
-    ));
+    // let boundary = Sphere::new(Vector3::new(0.0, 0.0, 0.0), 50.0, Dielectric::new(1.5));
+    // world.push(Constant::new(
+    //     boundary,
+    //     0.01,
+    //     SolidColor::new(1.0, 0.0, 0.0),
+    // ));
 
     let pretext = Noise::new(4.0);
     let mat = Lambertian::new(pretext);
@@ -253,7 +253,7 @@ fn simple_light() -> (Camera, World, Vector3<f32>) {
 
     world.push(Sphere::new(Vector3::new(0.0, 2.0, 0.0), 2.0, mat.clone()));
 
-    let difflight = DiffuseLight::new(SolidColor::new(15.0, 15.0, 15.0));
+    let difflight = DiffuseLight::new(SolidColor::new(7.0, 7.0, 7.0));
 
     world.push(RectAA::xy(3.0, 5.0, 1.0, 3.0, -2.0, difflight));
 
@@ -411,10 +411,10 @@ fn final_scene() -> (Camera, World, Vector3<f32>) {
     world.push(boundary.clone());
     world.push(Constant::new(boundary, 0.2, SolidColor::new(0.2, 0.4, 0.9)));
 
-    let boundary = Sphere::new(Vector3::new(0.0, 0.0, 0.0), 5000.0, Dielectric::new(1.5));
+    let boundary = Sphere::new(Vector3::new(0.0, 0.0, 0.0), 1000.0, Dielectric::new(1.5));
     world.push(Constant::new(
         boundary,
-        0.01,
+        0.0001,
         SolidColor::new(1.0, 1.0, 1.0),
     ));
 

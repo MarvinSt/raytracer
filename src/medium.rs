@@ -31,15 +31,15 @@ impl<H: Hittable, T: Texture> Hittable for Constant<H, T> {
 
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut rng = rand::thread_rng();
-        let hit1 = self.boundary.hit(r, f32::MIN, f32::MAX);
-        match hit1 {
+
+        match self.boundary.hit(&r, f32::MIN, f32::MAX) {
+            None => None,
             Some(hit1) => {
-                let hit2 = self.boundary.hit(r, hit1.t + 0.0001, f32::MAX);
-                match hit2 {
+                match self.boundary.hit(&r, hit1.t + 0.0001, f32::MAX) {
+                    None => None,
                     Some(hit2) => {
                         let t_min = hit1.t.max(t_min);
                         let t_max = hit2.t.min(t_max);
-                        // hit2.t = hit2.t.min(t_max);
 
                         if t_min >= t_max {
                             return None;
@@ -49,9 +49,9 @@ impl<H: Hittable, T: Texture> Hittable for Constant<H, T> {
 
                         let ray_length = r.direction().magnitude();
                         let distance_inside_boundary = (t_max - t_min) * ray_length;
-                        // let hit_distance = self.neg_inv_density * (rng.gen::<f32>().ln());
-                        let rand_double: f32 = rng.gen_range(0.0..=1.0);
-                        let hit_distance = self.neg_inv_density * rand_double.ln();
+                        let hit_distance = self.neg_inv_density * (rng.gen::<f32>().ln());
+                        // let rand_double: f32 = rng.gen_range(0.0..=1.0);
+                        // let hit_distance = self.neg_inv_density * rand_double.ln();
                         if hit_distance > distance_inside_boundary {
                             return None;
                         }
@@ -59,7 +59,7 @@ impl<H: Hittable, T: Texture> Hittable for Constant<H, T> {
                         let t = t_min + hit_distance / ray_length;
                         let p = r.point_at(t);
 
-                        return Some(HitRecord {
+                        Some(HitRecord {
                             p,
                             n: Vector3::new(1.0, 0.0, 0.0), // arbitrary
                             t,
@@ -67,12 +67,10 @@ impl<H: Hittable, T: Texture> Hittable for Constant<H, T> {
                             v: 0.0,
                             m: &self.phase_function,
                             front_face: true, // arbitrary
-                        });
+                        })
                     }
-                    None => return None,
                 }
             }
-            None => None,
         }
     }
 }

@@ -5,24 +5,25 @@ use rand::{distributions::Uniform, prelude::Distribution, Rng};
 use crate::{hit::HitRecord, ray::Ray, texture::Texture};
 
 pub fn random_unit_vector() -> Vector3<f32> {
-    let mut rng = rand::thread_rng();
+    random_in_unit_sphere().normalize()
+    /*
 
-    const MIN: f32 = -1.0;
-    const MAX: f32 = 1.0;
+        let mut rng = rand::thread_rng();
 
-    let uni = Uniform::from(MIN..=MAX);
+        const MIN: f32 = -1.0;
+        const MAX: f32 = 1.0;
 
-    Vector3::new(
-        uni.sample(&mut rng),
-        uni.sample(&mut rng),
-        uni.sample(&mut rng),
-    )
-    .normalize()
-}
+        let uni = Uniform::from(MIN..=MAX);
 
-pub fn random_in_unit_sphere() -> Vector3<f32> {
-    let mut rng = rand::thread_rng();
+        Vector3::new(
+            uni.sample(&mut rng),
+            uni.sample(&mut rng),
+            uni.sample(&mut rng),
+        )
+        .normalize()
+    */
 
+    /*
     const SCL1: f32 = std::f32::consts::SQRT_2 / 2.0;
     const SCL2: f32 = std::f32::consts::SQRT_2 * 2.0;
 
@@ -36,6 +37,59 @@ pub fn random_in_unit_sphere() -> Vector3<f32> {
     let z = 1.0 - 2.0 * (u * u + v * v);
 
     Vector3::new(x, y, z)
+    */
+}
+
+pub fn random_in_unit_sphere() -> Vector3<f32> {
+    let mut rng = rand::thread_rng();
+
+    const MIN: f32 = -1.0;
+    const MAX: f32 = 1.0;
+
+    let uni = Uniform::from(MIN..=MAX);
+
+    loop {
+        let v = Vector3::new(
+            uni.sample(&mut rng),
+            uni.sample(&mut rng),
+            uni.sample(&mut rng),
+        );
+
+        if v.magnitude_squared() <= 1.0 {
+            return v;
+        }
+    }
+
+    /*
+       var u = Math.random();
+       var v = Math.random();
+       var theta = u * 2.0 * Math.PI;
+       var phi = Math.acos(2.0 * v - 1.0);
+       var r = Math.cbrt(Math.random());
+       var sinTheta = Math.sin(theta);
+       var cosTheta = Math.cos(theta);
+       var sinPhi = Math.sin(phi);
+       var cosPhi = Math.cos(phi);
+       var x = r * sinPhi * cosTheta;
+       var y = r * sinPhi * sinTheta;
+       var z = r * cosPhi;
+       return {x: x, y: y, z: z};
+    */
+
+    /*
+        var u = Math.random();
+    var x1 = randn();
+    var x2 = randn();
+    var x3 = randn();
+
+    var mag = Math.sqrt(x1*x1 + x2*x2 + x3*x3);
+    x1 /= mag; x2 /= mag; x3 /= mag;
+
+    // Math.cbrt is cube root
+    var c = Math.cbrt(u);
+
+    return {x: x1*c, y:x2*c, z:x3*c};
+     */
 }
 
 fn near_zero(v: &Vector3<f32>) -> bool {
