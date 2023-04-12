@@ -1,9 +1,7 @@
-use std::f32::consts::PI;
-
+use crate::ray::Ray;
 use nalgebra::{Vector2, Vector3};
 use rand::Rng;
-
-use crate::ray::Ray;
+use std::f32::consts::PI;
 
 pub fn random_in_unit_circle() -> Vector2<f32> {
     let mut rng = rand::thread_rng();
@@ -80,9 +78,8 @@ impl Camera {
 
         Ray::new(
             self.origin + offset,
-            (self.lower_left_corner + u * self.horizontal + v * self.vertical
-                - (self.origin + offset))
-                .normalize(),
+            self.lower_left_corner + u * self.horizontal + v * self.vertical
+                - (self.origin + offset),
         )
     }
 }

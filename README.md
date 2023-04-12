@@ -13,9 +13,7 @@ This is a personal project to learn `rust` and my first real project in `rust`. 
 # Todo
 
 Open tasks:
-
-- [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
-- [ ] Continue with the implementations of Book 2
+- [x] Continue with the implementations of Book 2
     - [x] Implement bounding volume hierarchy tree to speed up large scene rendering
     - [x] Implement texture support for Lambert material:
         - [x] Rewrite all materials types as trait instead of enum
@@ -25,9 +23,10 @@ Open tasks:
     - [x] Box and plane geometry
     - [x] Instancing (rotation/translation)
     - [x] Medium and volumes
-    - [ ] Debug fog in final render (does not seem to work as expected). It seems that the volume is only rendered properly when it is in front of the camera, but it is not rendered correctly from the inside (it will be transparant)
-- [ ] Improve the ETA calculation in the renderer (low pass filter the last line time and multiply by remaining lines)
+    - [x] Debug fog in final render (now works as expected). 
+    - [ ] Polish the demo scene code
 - [ ] Rewrite BVH to work with indices to objects instead of object containers
+- [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
 - [ ] Implement additional tests for material functions
 # Build and Run
 

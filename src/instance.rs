@@ -134,15 +134,5 @@ impl<H: Hittable> Hittable for Rotate<H> {
             }
             None => None,
         }
-
-        // match self.obj.hit(&moved_r, t_min, t_max) {
-        //     Some(mut hit) => {
-        //         let on = hit.n;
-        //         hit.p += self.offset;
-        //         hit.set_face_normal(&moved_r, &on);
-        //         Some(hit)
-        //     }
-        //     None => None,
-        // }
     }
 }

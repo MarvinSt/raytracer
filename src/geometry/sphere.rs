@@ -58,42 +58,43 @@ impl<M: Material> Hittable for Sphere<M> {
 
         let d = b_half * b_half - a * c;
 
-        if d >= 0.0 {
-            let d_sqrt = d.sqrt();
+        if d < 0.0 {
+            return None;
+        }
 
-            // find the nearest root that lies in the acceptable range.
-            let mut t = (-b_half - d_sqrt) / a;
+        let d_sqrt = d.sqrt();
 
+        // find the nearest root that lies in the acceptable range.
+        let mut t = (-b_half - d_sqrt) / a;
+
+        if t > t_max || t < t_min {
+            t = (-b_half + d_sqrt) / a;
             if t > t_max || t < t_min {
-                t = (-b_half + d_sqrt) / a;
-            }
-
-            if t <= t_max && t >= t_min {
-                // precalculate outputs
-                let p: Vector3<f32> = r.point_at(t);
-                let on: Vector3<f32> = (p - self.center) / self.radius;
-
-                // get uv coordinates
-                let (u, v) = Sphere::<M>::get_uv(&on);
-
-                let mut h = HitRecord {
-                    t,
-                    p,
-                    n: on,
-                    m: &self.material,
-                    front_face: false,
-                    u,
-                    v,
-                };
-
-                h.set_face_normal(r, &on);
-
-                let h = h;
-
-                return Some(h);
+                return None;
             }
         }
 
-        None
+        // precalculate outputs
+        let p: Vector3<f32> = r.point_at(t);
+        let on: Vector3<f32> = (p - self.center) / self.radius;
+
+        // get uv coordinates
+        let (u, v) = Sphere::<M>::get_uv(&on);
+
+        let mut h = HitRecord {
+            t,
+            p,
+            n: on,
+            m: &self.material,
+            front_face: false,
+            u,
+            v,
+        };
+
+        h.set_face_normal(r, &on);
+
+        let h = h;
+
+        Some(h)
     }
 }

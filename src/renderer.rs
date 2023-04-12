@@ -16,11 +16,12 @@ pub fn get_pixel_color(
     i: u32,
     j: u32,
 ) -> Vector3<f32> {
+    let mut rng = rand::thread_rng();
     let mut color: Vector3<f32> = Vector3::default();
+
     // launch parallel iterator
     for _ in 0..samples_per_pixel {
         // need a new rng for each thread
-        let mut rng = rand::thread_rng();
         let u = (i as f32 + rng.gen::<f32>()) / (image_width - 1) as f32;
         let v = (j as f32 + rng.gen::<f32>()) / (image_height - 1) as f32;
 

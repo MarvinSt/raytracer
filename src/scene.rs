@@ -411,7 +411,7 @@ fn final_scene() -> (Camera, World, Vector3<f32>) {
     world.push(boundary.clone());
     world.push(Constant::new(boundary, 0.2, SolidColor::new(0.2, 0.4, 0.9)));
 
-    let boundary = Sphere::new(Vector3::new(0.0, 0.0, 0.0), 1000.0, Dielectric::new(1.5));
+    let boundary = Sphere::new(Vector3::new(0.0, 0.0, 0.0), 5000.0, Dielectric::new(1.5));
     world.push(Constant::new(
         boundary,
         0.0001,
@@ -454,11 +454,13 @@ fn final_scene() -> (Camera, World, Vector3<f32>) {
 
     world.push(boxes2);
 
+    let mut newworld = World::new();
+
+    newworld.push(Bvh::new(world.objects));
+
     let background = Vector3::new(0.0, 0.0, 0.0);
 
-    (cam, world, background)
-
-    // (cam, world.generate_bvh(), background)
+    (cam, newworld, background)
 }
 
 pub fn select_scene(i: usize) -> (Camera, World, Vector3<f32>) {

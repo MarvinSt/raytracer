@@ -71,6 +71,7 @@ impl Bvh {
 impl Hittable for Bvh {
     fn hit(&self, r: &Ray, t_min: f32, mut t_max: f32) -> Option<HitRecord> {
         match self.aabb.hit(r, t_min, t_max) {
+            false => return None,
             true => match &self.tree {
                 BvhNode::Leaf(leaf) => leaf.hit(&r, t_min, t_max),
                 BvhNode::Branch { left, right } => {
@@ -86,7 +87,6 @@ impl Hittable for Bvh {
                     }
                 }
             },
-            false => return None,
         }
     }
 

@@ -94,17 +94,16 @@ impl AABB {
             let inv_dir = 1.0 / r.direction()[i];
             let mut t0 = (self.min[i] - r.origin()[i]) * inv_dir;
             let mut t1 = (self.max[i] - r.origin()[i]) * inv_dir;
-            if inv_dir < 0.0 {
+            if t0 > t1 {
                 swap(&mut t0, &mut t1);
             }
 
-            let t_min = t_min.max(t0); // if t0 > t_min { t0 } else { t_min };
-            let t_max = t_max.min(t1); // if t1 < t_max { t1 } else { t_max };
+            let t_min = t_min.max(t0);
+            let t_max = t_max.min(t1);
             if t_max <= t_min {
                 return false;
             }
         }
         true
-        // Some(*self)
     }
 }

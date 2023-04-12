@@ -1,29 +1,10 @@
+use crate::{hit::HitRecord, ray::Ray, texture::Texture};
 use cgmath::num_traits::abs;
 use nalgebra::Vector3;
 use rand::{distributions::Uniform, prelude::Distribution, Rng};
 
-use crate::{hit::HitRecord, ray::Ray, texture::Texture};
-
 pub fn random_unit_vector() -> Vector3<f32> {
-    random_in_unit_sphere().normalize()
-    /*
-
-        let mut rng = rand::thread_rng();
-
-        const MIN: f32 = -1.0;
-        const MAX: f32 = 1.0;
-
-        let uni = Uniform::from(MIN..=MAX);
-
-        Vector3::new(
-            uni.sample(&mut rng),
-            uni.sample(&mut rng),
-            uni.sample(&mut rng),
-        )
-        .normalize()
-    */
-
-    /*
+    let mut rng = rand::thread_rng();
     const SCL1: f32 = std::f32::consts::SQRT_2 / 2.0;
     const SCL2: f32 = std::f32::consts::SQRT_2 * 2.0;
 
@@ -37,7 +18,8 @@ pub fn random_unit_vector() -> Vector3<f32> {
     let z = 1.0 - 2.0 * (u * u + v * v);
 
     Vector3::new(x, y, z)
-    */
+
+    // random_in_unit_sphere().normalize()
 }
 
 pub fn random_in_unit_sphere() -> Vector3<f32> {
@@ -61,35 +43,20 @@ pub fn random_in_unit_sphere() -> Vector3<f32> {
     }
 
     /*
-       var u = Math.random();
-       var v = Math.random();
-       var theta = u * 2.0 * Math.PI;
-       var phi = Math.acos(2.0 * v - 1.0);
-       var r = Math.cbrt(Math.random());
-       var sinTheta = Math.sin(theta);
-       var cosTheta = Math.cos(theta);
-       var sinPhi = Math.sin(phi);
-       var cosPhi = Math.cos(phi);
-       var x = r * sinPhi * cosTheta;
-       var y = r * sinPhi * sinTheta;
-       var z = r * cosPhi;
-       return {x: x, y: y, z: z};
-    */
-
-    /*
         var u = Math.random();
-    var x1 = randn();
-    var x2 = randn();
-    var x3 = randn();
-
-    var mag = Math.sqrt(x1*x1 + x2*x2 + x3*x3);
-    x1 /= mag; x2 /= mag; x3 /= mag;
-
-    // Math.cbrt is cube root
-    var c = Math.cbrt(u);
-
-    return {x: x1*c, y:x2*c, z:x3*c};
-     */
+        var v = Math.random();
+        var theta = u * 2.0 * Math.PI;
+        var phi = Math.acos(2.0 * v - 1.0);
+        var r = Math.cbrt(Math.random());
+        var sinTheta = Math.sin(theta);
+        var cosTheta = Math.cos(theta);
+        var sinPhi = Math.sin(phi);
+        var cosPhi = Math.cos(phi);
+        var x = r * sinPhi * cosTheta;
+        var y = r * sinPhi * sinTheta;
+        var z = r * cosPhi;
+        return {x: x, y: y, z: z};
+    */
 }
 
 fn near_zero(v: &Vector3<f32>) -> bool {
@@ -108,9 +75,9 @@ fn refract(
     cos_theta: f32,
     refraction_ratio: f32,
 ) -> Vector3<f32> {
-    let uv: Vector3<f32> = r_in.normalize();
-    let r_out_perp: Vector3<f32> = refraction_ratio * (uv + (cos_theta * n));
-    let r_out_parallel: Vector3<f32> = -(1.0 - r_out_perp.norm_squared()).abs().sqrt() * n;
+    let uv = r_in; // .normalize();
+    let r_out_perp: Vector3<f32> = refraction_ratio * (uv + cos_theta * n);
+    let r_out_parallel: Vector3<f32> = -n * ((1.0 - r_out_perp.norm_squared()).abs().sqrt());
     r_out_perp + r_out_parallel
 }
 
@@ -175,7 +142,7 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
-        let direction: Vector3<f32> = reflect(&r_in.direction(), &rec.n);
+        let direction: Vector3<f32> = reflect(&r_in.direction().normalize(), &rec.n);
         let scattered = Ray::new(rec.p, direction + self.fuzz * random_in_unit_sphere());
         let attenuation = self.albedo;
 
@@ -207,18 +174,19 @@ impl Material for Dielectric {
             self.refraction_index
         };
 
-        let cos_theta: f32 = f32::min(-&r_in.direction().dot(&rec.n), 1.0);
-        let sin_theta: f32 = (1.0 - cos_theta * cos_theta).sqrt();
+        let unit_dir = r_in.direction().normalize();
+        let cos_theta: f32 = (-unit_dir).dot(&rec.n);
+        let sin_theta: f32 = (1.0 - cos_theta * cos_theta).max(0.0).sqrt();
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction: Vector3<f32>;
 
         let mut rng = rand::thread_rng();
-        if cannot_refract || reflectance(cos_theta, refraction_ratio) > rng.gen::<f32>() {
-            direction = reflect(&r_in.direction(), &rec.n);
-        } else {
-            direction = refract(&r_in.direction(), &rec.n, cos_theta, refraction_ratio);
-        }
+        let direction =
+            if cannot_refract || reflectance(cos_theta, refraction_ratio) > rng.gen::<f32>() {
+                reflect(&unit_dir, &rec.n)
+            } else {
+                refract(&unit_dir, &rec.n, cos_theta, refraction_ratio)
+            };
 
         let scattered = Ray::new(rec.p, direction);
         return Some((attenuation, scattered));
