@@ -19,56 +19,14 @@ impl Cube {
     ) -> Self {
         let mut sides = World::new();
 
-        sides.add(Box::new(RectAA::xy(
-            p0.x,
-            p1.x,
-            p0.y,
-            p1.y,
-            p1.z,
-            material.clone(),
-        )));
-        sides.add(Box::new(RectAA::xy(
-            p0.x,
-            p1.x,
-            p0.y,
-            p1.y,
-            p0.z,
-            material.clone(),
-        )));
+        sides.push(RectAA::xy(p0.x, p1.x, p0.y, p1.y, p1.z, material.clone()));
+        sides.push(RectAA::xy(p0.x, p1.x, p0.y, p1.y, p0.z, material.clone()));
 
-        sides.add(Box::new(RectAA::xz(
-            p0.x,
-            p1.x,
-            p0.z,
-            p1.z,
-            p1.y,
-            material.clone(),
-        )));
-        sides.add(Box::new(RectAA::xz(
-            p0.x,
-            p1.x,
-            p0.z,
-            p1.z,
-            p0.y,
-            material.clone(),
-        )));
+        sides.push(RectAA::xz(p0.x, p1.x, p0.z, p1.z, p1.y, material.clone()));
+        sides.push(RectAA::xz(p0.x, p1.x, p0.z, p1.z, p0.y, material.clone()));
 
-        sides.add(Box::new(RectAA::yz(
-            p0.y,
-            p1.y,
-            p0.z,
-            p1.z,
-            p1.x,
-            material.clone(),
-        )));
-        sides.add(Box::new(RectAA::yz(
-            p0.y,
-            p1.y,
-            p0.z,
-            p1.z,
-            p0.x,
-            material.clone(),
-        )));
+        sides.push(RectAA::yz(p0.y, p1.y, p0.z, p1.z, p1.x, material.clone()));
+        sides.push(RectAA::yz(p0.y, p1.y, p0.z, p1.z, p0.x, material.clone()));
 
         Self {
             box_min: p0,

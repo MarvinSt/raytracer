@@ -1,11 +1,10 @@
-use crate::hit::{random_double, random_int, random_unit_vector};
+use crate::{hit::random_int, material::random_unit_vector};
 use core::array::from_fn;
 use nalgebra::Vector3;
 
 #[derive(Copy, Clone)]
 pub struct Perlin {
     ranvec: [Vector3<f32>; Perlin::POINT_COUNT],
-    // ranfloat: [f32; Perlin::POINT_COUNT],
     perm_x: [i16; Perlin::POINT_COUNT],
     perm_y: [i16; Perlin::POINT_COUNT],
     perm_z: [i16; Perlin::POINT_COUNT],
@@ -17,7 +16,6 @@ impl Perlin {
     pub fn new() -> Perlin {
         Perlin {
             ranvec: Self::perlin_generate_vec(),
-            // ranfloat: Self::perlin_generate(),
             perm_x: Self::perlin_generate_perm(),
             perm_y: Self::perlin_generate_perm(),
             perm_z: Self::perlin_generate_perm(),
@@ -43,25 +41,16 @@ impl Perlin {
         let v = p.y - p.y.floor();
         let w = p.z - p.z.floor();
 
-        // let u = u * u * (3.0 - 2.0 * u);
-        // let v = v * v * (3.0 - 2.0 * v);
-        // let w = w * w * (3.0 - 2.0 * w);
-
         let i = p.x.floor() as i16;
         let j = p.y.floor() as i16;
         let k = p.z.floor() as i16;
 
-        //        let mut c = [0.0; 8];
         let mut c = [Vector3::new(0.0, 0.0, 0.0); 8];
 
         let mut q = 0;
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
-                    // c[q] = self.ranfloat[(self.perm_x[((i + di) & 255) as usize]
-                    //     ^ self.perm_y[((j + dj) & 255) as usize]
-                    //     ^ self.perm_z[((k + dk) & 255) as usize])
-                    //     as usize];
                     c[q] = self.ranvec[(self.perm_x[((i + di) & 255) as usize]
                         ^ self.perm_y[((j + dj) & 255) as usize]
                         ^ self.perm_z[((k + dk) & 255) as usize])
@@ -85,11 +74,6 @@ impl Perlin {
             for j in 0..2 {
                 for k in 0..2 {
                     let weight_v = Vector3::new(u - i as f32, v - j as f32, w - k as f32);
-                    // accum += (i as f32 * u + (1 - i) as f32 * (1.0 - u))
-                    //     * (j as f32 * v + (1 - j) as f32 * (1.0 - v))
-                    //     * (k as f32 * w + (1 - k) as f32 * (1.0 - w))
-                    //     * c[q];
-
                     accum += (i as f32 * uu + (1 - i) as f32 * (1.0 - uu))
                         * (j as f32 * vv + (1 - j) as f32 * (1.0 - vv))
                         * (k as f32 * ww + (1 - k) as f32 * (1.0 - ww))
@@ -113,10 +97,6 @@ impl Perlin {
         let mut p: [i16; Perlin::POINT_COUNT] = from_fn(|i| i as i16);
         Perlin::permute(&mut p, Perlin::POINT_COUNT);
         p
-    }
-
-    fn perlin_generate() -> [f32; Perlin::POINT_COUNT] {
-        from_fn(|_i| random_double(0.0, 1.0))
     }
 
     fn perlin_generate_vec() -> [Vector3<f32>; Perlin::POINT_COUNT] {

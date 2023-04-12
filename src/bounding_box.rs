@@ -2,7 +2,7 @@ use crate::ray::Ray;
 use nalgebra::Vector3;
 use std::mem::swap;
 
-#[derive(Default, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct AABB {
     min: Vector3<f32>,
     max: Vector3<f32>,
@@ -11,6 +11,13 @@ pub struct AABB {
 impl AABB {
     pub fn new(min: Vector3<f32>, max: Vector3<f32>) -> Self {
         Self { min: min, max: max }
+    }
+
+    pub fn default() -> Self {
+        Self {
+            min: Vector3::new(f32::INFINITY, f32::INFINITY, f32::INFINITY),
+            max: Vector3::new(f32::NEG_INFINITY, f32::NEG_INFINITY, f32::NEG_INFINITY),
+        }
     }
 
     pub fn min(&self) -> Vector3<f32> {
@@ -82,7 +89,7 @@ impl AABB {
         return AABB::new(small, big);
     }
 
-    pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<AABB> {
+    pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> bool {
         for i in 0..3 {
             let inv_dir = 1.0 / r.direction()[i];
             let mut t0 = (self.min[i] - r.origin()[i]) * inv_dir;
@@ -91,37 +98,13 @@ impl AABB {
                 swap(&mut t0, &mut t1);
             }
 
-            let t_min = if t0 > t_min { t0 } else { t_min };
-            let t_max = if t1 < t_max { t1 } else { t_max };
+            let t_min = t_min.max(t0); // if t0 > t_min { t0 } else { t_min };
+            let t_max = t_max.min(t1); // if t1 < t_max { t1 } else { t_max };
             if t_max <= t_min {
-                return None;
+                return false;
             }
         }
-
-        Some(AABB::default())
+        true
+        // Some(*self)
     }
-
-    /*
-    fn hit_ori(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<AABB> {
-        for i in 0..3 {
-            let t0 = f32::min(
-                (self.min[i] - r.origin()[i]) / r.direction()[i],
-                (self.max[i] - r.origin()[i]) / r.direction()[i],
-            );
-            let t1 = f32::max(
-                (self.min[i] - r.origin()[i]) / r.direction()[i],
-                (self.max[i] - r.origin()[i]) / r.direction()[i],
-            );
-
-            let t_min = f32::max(t0, t_min);
-            let t_max = f32::min(t1, t_max);
-
-            if t_max <= t_min {
-                return None;
-            }
-        }
-
-        Some(AABB::default())
-    }
-    */
 }

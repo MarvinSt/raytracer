@@ -7,6 +7,7 @@ mod camera;
 mod hit;
 mod instance;
 mod material;
+mod medium;
 mod noise;
 mod ray;
 mod renderer;
@@ -20,6 +21,16 @@ mod geometry {
 }
 
 fn main() {
-    let (cam, world, background) = select_scene(5);
-    render(&cam, &world, &background);
+    // for i in 0..=8 {
+    //     let (cam, world, background) = select_scene(i);
+    //     let path = format!("./tests/new_result_{}.png", i);
+    //     render(&cam, &world, &background, &path);
+    // }
+
+    for i in 7..=7 {
+        let (cam, world, background) = select_scene(i);
+        let path = format!("./tests/new_result_{}.png", i);
+        let samples_per_pixel = 200;
+        render(&cam, &world, &background, &path, samples_per_pixel);
+    }
 }

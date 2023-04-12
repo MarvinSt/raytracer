@@ -1,6 +1,9 @@
-use crate::{bhv::Bvh, bounding_box::AABB, material::*, ray::Ray};
-use nalgebra::{Vector2, Vector3};
-use rand::Rng;
+use crate::{bounding_box::AABB, material::*, ray::Ray};
+use nalgebra::Vector3;
+use rand::{
+    distributions::{Distribution, Uniform},
+    Rng,
+};
 
 pub trait Hittable {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
@@ -45,19 +48,8 @@ impl<'a> World {
         }
     }
 
-    pub fn add(&mut self, obj: Box<dyn Hittable>) {
-        self.objects.push(obj);
-    }
-
-    // pub fn objects(&self) -> &Vec<Box<dyn Hittable>> {
-    //     &self.objects
-    // }
-
-    pub fn generate_bvh(self) -> World {
-        let bvh = Box::new(Bvh::new(self.objects));
-        let mut world = World::new();
-        world.add(bvh);
-        world
+    pub fn push<H: Hittable + 'static>(&mut self, obj: H) {
+        self.objects.push(Box::new(obj));
     }
 
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
@@ -67,7 +59,7 @@ impl<'a> World {
         for obj in self.objects.iter() {
             if let Some(current_hit) = obj.hit(r, t_min, closest_hit) {
                 closest_hit = current_hit.t;
-                hit_record = Some(current_hit).clone();
+                hit_record = Some(current_hit);
             }
         }
 
@@ -91,53 +83,11 @@ pub fn random_color_vector() -> Vector3<f32> {
 
     let mut rng = rand::thread_rng();
 
+    let uni = Uniform::from(MIN..=MAX);
+
     Vector3::new(
-        rng.gen_range(MIN..=MAX),
-        rng.gen_range(MIN..=MAX),
-        rng.gen_range(MIN..=MAX),
+        uni.sample(&mut rng),
+        uni.sample(&mut rng),
+        uni.sample(&mut rng),
     )
-}
-
-pub fn random_unit_vector() -> Vector3<f32> {
-    random_in_unit_sphere().normalize()
-    /*
-    let mut rng = rand::thread_rng();
-
-    let scl1: f32 = f32::sqrt(2.0) / 2.0;
-    let scl2: f32 = f32::sqrt(2.0) * 2.0;
-
-    // unitrand in [-1,1].
-    let u = scl1 * rng.gen::<f32>();
-    let v = scl1 * rng.gen::<f32>();
-    let w = scl2 * f32::sqrt(1.0 - u * u - v * v);
-
-    let x = w * u;
-    let y = w * v;
-    let z = 1.0 - 2.0 * (u * u + v * v);
-
-    Vector3::new(x, y, z)
-    */
-}
-
-pub fn random_in_unit_circle() -> Vector2<f32> {
-    let mut rng = rand::thread_rng();
-    let unit: Vector2<f32> = Vector2::new(1.0, 1.0);
-    loop {
-        let p: Vector2<f32> = 2.0 * Vector2::new(rng.gen::<f32>(), rng.gen::<f32>()) - unit;
-        if p.dot(&p) < 1.0 {
-            return p;
-        }
-    }
-}
-
-pub fn random_in_unit_sphere() -> Vector3<f32> {
-    let mut rng = rand::thread_rng();
-    let unit: Vector3<f32> = Vector3::new(1.0, 1.0, 1.0);
-    loop {
-        let p: Vector3<f32> =
-            2.0 * Vector3::new(rng.gen::<f32>(), rng.gen::<f32>(), rng.gen::<f32>()) - unit;
-        if p.dot(&p) < 1.0 {
-            return p;
-        }
-    }
 }

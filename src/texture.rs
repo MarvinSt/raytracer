@@ -109,11 +109,7 @@ impl Noise {
 
 impl Texture for Noise {
     fn value(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
-        let ps = p.scale(self.scale);
-        // Vector3::new(0.5, 0.5, 0.5) * (1.0 + self.noise.noise(&ps))
-        // Vector3::new(1.0, 1.0, 1.0) * self.noise.turb(&ps, 7)
-
         Vector3::new(0.5, 0.5, 0.5)
-            * (1.0 + f32::sin(self.scale * p.z + 10.0 * self.noise.turb(&ps, 7)))
+            * (1.0 + f32::sin(self.scale * p.z + 10.0 * self.noise.turb(&p, 7)))
     }
 }

@@ -24,7 +24,10 @@ Open tasks:
     - [x] Implement light emitting material
     - [x] Box and plane geometry
     - [x] Instancing (rotation/translation)
-    - [ ] Medium and volumes
+    - [x] Medium and volumes
+    - [ ] Debug fog in final render (does not seem to work as expected). It seems that the volume is only rendered properly when it is in front of the camera, but it is not rendered correctly from the inside (it will be transparant)
+- [ ] Improve the ETA calculation in the renderer (low pass filter the last line time and multiply by remaining lines)
+- [ ] Rewrite BVH to work with indices to objects instead of object containers
 - [ ] Implement additional tests for material functions
 # Build and Run
 
@@ -75,10 +78,12 @@ During my brief testing, I also tried calculating each sample per pixel in a sep
 
 # Output
 
-Scenes with spheres of different materials (Dielectric, Lambertian and Metal)
+![scene0](./tests/result_0.png)
 ![scene1](./tests/result_1.png)
 ![scene2](./tests/result_2.png)
-Dense scene with checkerboard ground material
 ![scene3](./tests/result_3.png)
-Sphere with globe image texture
 ![scene4](./tests/result_4.png)
+![scene5](./tests/result_5.png)
+![scene6](./tests/result_6.png)
+![scene7](./tests/result_7.png)
+![scene8](./tests/result_8.png)

@@ -1,13 +1,9 @@
+use crate::{camera::Camera, hit::World};
 use image::Rgb;
 use nalgebra::Vector3;
+use rand::Rng;
 use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 use std::time::{Duration, SystemTime};
-
-use crate::{
-    camera::Camera,
-    hit::{random_double, World},
-    ray::ray_color,
-};
 
 pub fn get_pixel_color(
     image_width: u32,
@@ -24,28 +20,37 @@ pub fn get_pixel_color(
     // launch parallel iterator
     for _ in 0..samples_per_pixel {
         // need a new rng for each thread
-        let u = (i as f32 + random_double(0.0, 1.0)) / (image_width - 1) as f32;
-        let v = (j as f32 + random_double(0.0, 1.0)) / (image_height - 1) as f32;
+        let mut rng = rand::thread_rng();
+        let u = (i as f32 + rng.gen::<f32>()) / (image_width - 1) as f32;
+        let v = (j as f32 + rng.gen::<f32>()) / (image_height - 1) as f32;
 
-        // Return the colour (note lack of semicolon)
-        color += ray_color(&cam.ray(u, v), background, &world, max_depth);
+        // accumulate the color for each sample
+        color += &cam.ray(u, v).color(background, &world, max_depth);
     }
 
+    // return the color normalized per sample
     color / samples_per_pixel as f32
 }
 
-pub fn render(cam: &Camera, world: &World, background: &Vector3<f32>) {
+pub fn render(
+    cam: &Camera,
+    world: &World,
+    background: &Vector3<f32>,
+    path: &str,
+    samples_per_pixel: u16,
+) {
     let max_depth = 50;
-    let samples_per_pixel = 200;
+    // let samples_per_pixel = 100;
 
     // generate output buffer
-    let image_width = 600 as u32;
+    let image_width = 800 as u32;
     let image_height = (image_width as f32 / cam.aspect_ratio) as u32;
     let mut buffer: image::RgbImage = image::ImageBuffer::new(image_width, image_height);
 
-    let t_all = SystemTime::now();
+    let total_time = SystemTime::now();
+    let mut line_time_avg = 0.0;
     for j in (0..image_height).rev() {
-        let t_line = SystemTime::now();
+        let line_time = SystemTime::now();
 
         let pixels: Vec<(Vector3<f32>, Duration)> = (0..image_width)
             .into_par_iter()
@@ -67,7 +72,14 @@ pub fn render(cam: &Camera, world: &World, background: &Vector3<f32>) {
             })
             .collect();
 
-        let t_line = t_line.elapsed().unwrap().as_micros();
+        let line_time = line_time.elapsed().unwrap().as_micros() as f32 * 1.0e-3;
+
+        // low pass filter the average line time
+        if line_time_avg > 0.0 {
+            line_time_avg = line_time_avg + 0.1 * (line_time - line_time_avg);
+        } else {
+            line_time_avg = line_time;
+        }
 
         let mut pix_time = 0;
         for x in 0..image_width {
@@ -84,21 +96,28 @@ pub fn render(cam: &Camera, world: &World, background: &Vector3<f32>) {
             pix_time += duration.as_micros();
         }
 
+        let pix_time = pix_time as f32 * 1.0e-3;
+
+        let rem_rows = j;
+
+        let eta = line_time_avg * rem_rows as f32 * 1.0e-3;
+
         println!(
-            "Line No.# {} \t| Line Time {:?} [us] \t| Pix Time {:?} [us] \t| Ratio {:?}",
+            "# {}\t| Line {:>10.3} [ms]\t| Pixel {:>10.3} [ms]\t| Ratio {:>6.3} \t| ETA: {:>9.3} [s]",
             j,
-            t_line,
+            line_time,
             pix_time,
-            pix_time as f32 / t_line as f32
+            pix_time / line_time,
+            eta
         );
     }
 
     println!(
         "Total render time: {:?} [ms]",
-        t_all.elapsed().unwrap().as_millis()
+        total_time.elapsed().unwrap().as_millis()
     );
 
-    buffer.save("result.png").unwrap();
+    buffer.save(path).unwrap();
 
     println!("\rDone!");
 }

@@ -4,6 +4,7 @@ use crate::material::Material;
 use crate::ray::Ray;
 use nalgebra::Vector3;
 
+#[derive(Copy, Clone)]
 pub struct Sphere<M: Material> {
     center: Vector3<f32>,
     radius: f32,
@@ -90,6 +91,8 @@ impl<M: Material> Hittable for Sphere<M> {
         };
 
         h.set_face_normal(r, &on);
+
+        let h = h;
 
         Some(h)
     }

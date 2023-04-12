@@ -1,8 +1,24 @@
 use std::f32::consts::PI;
 
 use nalgebra::{Vector2, Vector3};
+use rand::Rng;
 
-use crate::{hit::random_in_unit_circle, ray::Ray};
+use crate::ray::Ray;
+
+pub fn random_in_unit_circle() -> Vector2<f32> {
+    let mut rng = rand::thread_rng();
+
+    let a = rng.gen::<f32>();
+    let b = rng.gen::<f32>();
+
+    const TWO_PI: f32 = 2.0 * std::f32::consts::PI;
+
+    if b < a {
+        Vector2::new(a * f32::cos(TWO_PI * b / a), a * f32::sin(TWO_PI * b / a))
+    } else {
+        Vector2::new(b * f32::cos(TWO_PI * a / b), b * f32::sin(TWO_PI * a / b))
+    }
+}
 
 pub struct Camera {
     // focal_length: f32,
