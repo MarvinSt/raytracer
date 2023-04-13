@@ -2,4 +2,4 @@
 Cargo.lock
 .DS_Store
 result.png
-/tests/new_*
+/tests/*copy.png

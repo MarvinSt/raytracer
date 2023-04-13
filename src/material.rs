@@ -4,6 +4,7 @@ use nalgebra::Vector3;
 use rand::{distributions::Uniform, prelude::Distribution, Rng};
 
 pub fn random_unit_vector() -> Vector3<f32> {
+    /*
     let mut rng = rand::thread_rng();
     const SCL1: f32 = std::f32::consts::SQRT_2 / 2.0;
     const SCL2: f32 = std::f32::consts::SQRT_2 * 2.0;
@@ -18,8 +19,9 @@ pub fn random_unit_vector() -> Vector3<f32> {
     let z = 1.0 - 2.0 * (u * u + v * v);
 
     Vector3::new(x, y, z)
+    */
 
-    // random_in_unit_sphere().normalize()
+    random_in_unit_sphere().normalize()
 }
 
 pub fn random_in_unit_sphere() -> Vector3<f32> {
@@ -142,11 +144,11 @@ impl Metal {
 
 impl Material for Metal {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
-        let direction: Vector3<f32> = reflect(&r_in.direction().normalize(), &rec.n);
+        let direction: Vector3<f32> = reflect(&r_in.nrm_dir, &rec.n);
         let scattered = Ray::new(rec.p, direction + self.fuzz * random_in_unit_sphere());
         let attenuation = self.albedo;
 
-        match scattered.direction().dot(&rec.n) > 0.0 {
+        match scattered.dir.dot(&rec.n) > 0.0 {
             true => Some((attenuation, scattered)),
             false => None,
         }
@@ -174,9 +176,9 @@ impl Material for Dielectric {
             self.refraction_index
         };
 
-        let unit_dir = r_in.direction().normalize();
+        let unit_dir = r_in.nrm_dir; // ;.direction().normalize();
         let cos_theta: f32 = (-unit_dir).dot(&rec.n);
-        let sin_theta: f32 = (1.0 - cos_theta * cos_theta).max(0.0).sqrt();
+        let sin_theta: f32 = f32::max(1.0 - cos_theta * cos_theta, 0.0).sqrt();
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
 

@@ -49,11 +49,11 @@ impl<M: Material> Hittable for Sphere<M> {
     }
 
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let oc: Vector3<f32> = r.origin() - self.center;
+        let oc: Vector3<f32> = r.ori - self.center;
 
         // calculate the intersections
-        let a: f32 = r.direction().magnitude_squared();
-        let b_half: f32 = oc.dot(&r.direction());
+        let a: f32 = r.dir.magnitude_squared();
+        let b_half: f32 = oc.dot(&r.dir);
         let c: f32 = oc.magnitude_squared() - self.radius * self.radius;
 
         let d = b_half * b_half - a * c;

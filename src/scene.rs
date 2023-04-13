@@ -454,13 +454,9 @@ fn final_scene() -> (Camera, World, Vector3<f32>) {
 
     world.push(boxes2);
 
-    let mut newworld = World::new();
-
-    newworld.push(Bvh::new(world.objects));
-
     let background = Vector3::new(0.0, 0.0, 0.0);
 
-    (cam, newworld, background)
+    (cam, world, background)
 }
 
 pub fn select_scene(i: usize) -> (Camera, World, Vector3<f32>) {

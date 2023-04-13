@@ -104,18 +104,19 @@ pub fn render(
         let eta = line_time_avg * rem_rows as f32 * 1.0e-3;
 
         println!(
-            "# {}\t| Line {:>10.3} [ms]\t| Pixel {:>10.3} [ms]\t| Ratio {:>6.3} \t| ETA: {:>9.3} [s]",
+            "# {}\t| Line {:>10.3} [ms]\t| Pixel {:>10.3} [ms]\t| Ratio {:>6.3} \t| ETA: {:>9.2} [s] \t| ELA: {:>9.2} [s]",
             j,
             line_time,
             pix_time,
             pix_time / line_time,
-            eta
+            eta,
+            total_time.elapsed().unwrap().as_millis() as f32 * 1.0e-3
         );
     }
 
     println!(
-        "Total render time: {:?} [ms]",
-        total_time.elapsed().unwrap().as_millis()
+        "Total render time: {:?} [s]",
+        total_time.elapsed().unwrap().as_millis() as f32 * 1.0e-3
     );
 
     buffer.save(path).unwrap();

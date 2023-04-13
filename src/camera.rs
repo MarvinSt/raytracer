@@ -1,9 +1,25 @@
 use crate::ray::Ray;
 use nalgebra::{Vector2, Vector3};
-use rand::Rng;
+use rand::{distributions::Uniform, prelude::Distribution};
 use std::f32::consts::PI;
 
 pub fn random_in_unit_circle() -> Vector2<f32> {
+    let mut rng = rand::thread_rng();
+
+    const MIN: f32 = -1.0;
+    const MAX: f32 = 1.0;
+
+    let uni = Uniform::from(MIN..=MAX);
+
+    loop {
+        let v = Vector2::new(uni.sample(&mut rng), uni.sample(&mut rng));
+
+        if v.magnitude_squared() <= 1.0 {
+            return v;
+        }
+    }
+
+    /*
     let mut rng = rand::thread_rng();
 
     let a = rng.gen::<f32>();
@@ -16,6 +32,7 @@ pub fn random_in_unit_circle() -> Vector2<f32> {
     } else {
         Vector2::new(b * f32::cos(TWO_PI * a / b), b * f32::sin(TWO_PI * a / b))
     }
+    */
 }
 
 pub struct Camera {

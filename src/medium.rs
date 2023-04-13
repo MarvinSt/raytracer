@@ -47,7 +47,7 @@ impl<H: Hittable, T: Texture> Hittable for Constant<H, T> {
 
                         let t_min = t_min.max(0.0);
 
-                        let ray_length = r.direction().magnitude();
+                        let ray_length = r.dir.magnitude();
                         let distance_inside_boundary = (t_max - t_min) * ray_length;
                         let hit_distance = self.neg_inv_density * (rng.gen::<f32>().ln());
 
@@ -57,7 +57,7 @@ impl<H: Hittable, T: Texture> Hittable for Constant<H, T> {
 
                         let t = t_min + hit_distance / ray_length;
                         let p = r.point_at(t);
-
+                        // let p =  r.ori + t * r.dir;
                         Some(HitRecord {
                             p,
                             n: Vector3::new(1.0, 0.0, 0.0), // arbitrary

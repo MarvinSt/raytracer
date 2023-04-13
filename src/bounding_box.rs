@@ -1,11 +1,23 @@
 use crate::ray::Ray;
 use nalgebra::Vector3;
-use std::mem::swap;
+use std::ops::Index;
 
 #[derive(Copy, Clone)]
 pub struct AABB {
     min: Vector3<f32>,
     max: Vector3<f32>,
+}
+
+impl Index<usize> for AABB {
+    type Output = Vector3<f32>;
+
+    fn index(&self, index: usize) -> &Vector3<f32> {
+        if index == 0 {
+            &self.min
+        } else {
+            &self.max
+        }
+    }
 }
 
 impl AABB {
@@ -90,20 +102,41 @@ impl AABB {
     }
 
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> bool {
+        // Algorithm from: https://github.com/svenstaro/bvh
+        let mut ray_min = (&self[r.sign_x].x - r.ori.x) * r.inv_dir.x;
+        let mut ray_max = (&self[1 - r.sign_x].x - r.ori.x) * r.inv_dir.x;
+
+        let y_min = (self[r.sign_y].y - r.ori.y) * r.inv_dir.y;
+        let y_max = (self[1 - r.sign_y].y - r.ori.y) * r.inv_dir.y;
+
+        ray_min = f32::max(ray_min, y_min);
+        ray_max = f32::min(ray_max, y_max);
+
+        let z_min = (self[r.sign_z].z - r.ori.z) * r.inv_dir.z;
+        let z_max = (self[1 - r.sign_z].z - r.ori.z) * r.inv_dir.z;
+
+        ray_min = f32::max(ray_min, z_min);
+        ray_max = f32::min(ray_max, z_max);
+
+        f32::max(ray_min, t_min) <= f32::min(ray_max, t_max)
+
+        /*
         for i in 0..3 {
-            let inv_dir = 1.0 / r.direction()[i];
-            let mut t0 = (self.min[i] - r.origin()[i]) * inv_dir;
-            let mut t1 = (self.max[i] - r.origin()[i]) * inv_dir;
+            // let inv_dir = 1.0 / r.inv_dir[i];
+            let mut t0 = (self.min[i] - r.ori[i]) * r.inv_dir[i];
+            let mut t1 = (self.max[i] - r.ori[i]) * r.inv_dir[i];
             if t0 > t1 {
                 swap(&mut t0, &mut t1);
             }
 
-            let t_min = t_min.max(t0);
-            let t_max = t_max.min(t1);
+            let t_min = f32::max(t_min, t0);
+            let t_max = f32::min(t_max, t1);
             if t_max <= t_min {
                 return false;
             }
         }
         true
+
+         */
     }
 }

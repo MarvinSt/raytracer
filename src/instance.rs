@@ -86,7 +86,7 @@ impl<H: Hittable> Hittable for Translate<H> {
     }
 
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let moved_r = Ray::new(r.origin() - self.offset, r.direction());
+        let moved_r = Ray::new(r.ori - self.offset, r.dir);
 
         match self.obj.hit(&moved_r, t_min, t_max) {
             Some(mut hit) => {
@@ -106,14 +106,14 @@ impl<H: Hittable> Hittable for Rotate<H> {
     }
 
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
-        let mut origin: Vector3<f32> = r.origin();
-        let mut direction: Vector3<f32> = r.direction();
+        let mut origin: Vector3<f32> = r.ori;
+        let mut direction: Vector3<f32> = r.dir;
 
-        origin.x = self.cos_theta * r.origin().x - self.sin_theta * r.origin().z;
-        origin.z = self.sin_theta * r.origin().x + self.cos_theta * r.origin().z;
+        origin.x = self.cos_theta * r.ori.x - self.sin_theta * r.ori.z;
+        origin.z = self.sin_theta * r.ori.x + self.cos_theta * r.ori.z;
 
-        direction.x = self.cos_theta * r.direction().x - self.sin_theta * r.direction().z;
-        direction.z = self.sin_theta * r.direction().x + self.cos_theta * r.direction().z;
+        direction.x = self.cos_theta * r.dir.x - self.sin_theta * r.dir.z;
+        direction.z = self.sin_theta * r.dir.x + self.cos_theta * r.dir.z;
 
         let rotated_r = Ray::new(origin, direction);
 

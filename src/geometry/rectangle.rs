@@ -90,9 +90,9 @@ impl<M: Material> Hittable for RectAA<M> {
 
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = match &self.plane {
-            Plane::XY => (self.k - r.origin().z) / r.direction().z,
-            Plane::XZ => (self.k - r.origin().y) / r.direction().y,
-            Plane::YZ => (self.k - r.origin().x) / r.direction().x,
+            Plane::XY => (self.k - r.ori.z) / r.dir.z,
+            Plane::XZ => (self.k - r.ori.y) / r.dir.y,
+            Plane::YZ => (self.k - r.ori.x) / r.dir.x,
         };
 
         // calculate the intersections
@@ -102,18 +102,18 @@ impl<M: Material> Hittable for RectAA<M> {
 
         let (a, b, on) = match &self.plane {
             Plane::XY => (
-                r.origin().x + t * r.direction().x,
-                r.origin().y + t * r.direction().y,
+                r.ori.x + t * r.dir.x,
+                r.ori.y + t * r.dir.y,
                 Vector3::new(0.0, 0.0, 1.0),
             ),
             Plane::XZ => (
-                r.origin().x + t * r.direction().x,
-                r.origin().z + t * r.direction().z,
+                r.ori.x + t * r.dir.x,
+                r.ori.z + t * r.dir.z,
                 Vector3::new(0.0, 1.0, 0.0),
             ),
             Plane::YZ => (
-                r.origin().y + t * r.direction().y,
-                r.origin().z + t * r.direction().z,
+                r.ori.y + t * r.dir.y,
+                r.ori.z + t * r.dir.z,
                 Vector3::new(1.0, 0.0, 0.0),
             ),
         };
@@ -124,10 +124,11 @@ impl<M: Material> Hittable for RectAA<M> {
 
         let u = (a - self.a0) / (self.a1 - self.a0);
         let v = (b - self.b0) / (self.b1 - self.b0);
+        let p = r.point_at(t);
 
         let mut h = HitRecord {
             t: t,
-            p: r.point_at(t),
+            p: p,
             n: on,
             m: &self.material,
             front_face: false,

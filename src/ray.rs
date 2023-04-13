@@ -5,23 +5,39 @@ use nalgebra::Vector3;
 pub struct Ray {
     pub ori: Vector3<f32>,
     pub dir: Vector3<f32>,
+    pub nrm_dir: Vector3<f32>,
+    pub inv_dir: Vector3<f32>,
+    pub sign_x: usize,
+    pub sign_y: usize,
+    pub sign_z: usize,
 }
 
 impl Ray {
     pub fn new(origin: Vector3<f32>, direction: Vector3<f32>) -> Self {
-        Self {
+        let nrm_dir = direction.normalize();
+        Ray {
             ori: origin,
             dir: direction,
+            nrm_dir: nrm_dir,
+            inv_dir: Vector3::new(1.0 / direction.x, 1.0 / direction.y, 1.0 / direction.z),
+            sign_x: (direction.x < 0.0) as usize,
+            sign_y: (direction.y < 0.0) as usize,
+            sign_z: (direction.z < 0.0) as usize,
         }
+
+        // Self {
+        //     ori: origin,
+        //     dir: direction,
+        // }
     }
 
-    pub fn origin(&self) -> Vector3<f32> {
-        self.ori
-    }
+    // pub fn origin(&self) -> Vector3<f32> {
+    //     self.ori
+    // }
 
-    pub fn direction(&self) -> Vector3<f32> {
-        self.dir
-    }
+    // pub fn direction(&self) -> Vector3<f32> {
+    //     self.dir
+    // }
 
     pub fn point_at(&self, t: f32) -> Vector3<f32> {
         self.ori + t * self.dir
