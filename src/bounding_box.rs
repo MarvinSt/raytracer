@@ -2,7 +2,7 @@ use crate::ray::Ray;
 use nalgebra::Vector3;
 use std::ops::Index;
 
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct AABB {
     min: Vector3<f32>,
     max: Vector3<f32>,

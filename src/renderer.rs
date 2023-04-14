@@ -26,7 +26,7 @@ pub fn get_pixel_color(
         let v = (j as f32 + rng.gen::<f32>()) / (image_height - 1) as f32;
 
         // accumulate the color for each sample
-        color += &cam.ray(u, v).color(background, &world, max_depth);
+        color += &cam.ray(u, v).color_iter(background, &world, max_depth);
     }
 
     // return the color normalized per sample

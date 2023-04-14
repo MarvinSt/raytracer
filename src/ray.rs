@@ -1,3 +1,5 @@
+use std::ops::{Add, AddAssign};
+
 use crate::hit::World;
 use nalgebra::Vector3;
 
@@ -66,5 +68,43 @@ impl Ray {
             }
             None => *background,
         }
+    }
+
+    pub fn color_iter(
+        &self,
+        background: &Vector3<f32>,
+        world: &World,
+        max_depth: u8,
+    ) -> Vector3<f32> {
+        let mut cur_ray = *self;
+
+        let mut color = Vector3::new(0.0, 0.0, 0.0);
+        let mut global_attenuation = Vector3::new(1.0, 1.0, 1.0);
+
+        for _depth in 0..max_depth {
+            match world.hit(&cur_ray, 0.001, f32::MAX) {
+                None => return color.add(background.component_mul(&global_attenuation)),
+                Some(hit) => {
+                    // get the emitted color
+                    let emitted = hit.m.emitted(hit.u, hit.v, &hit.p);
+                    color = color + emitted.component_mul(&global_attenuation);
+
+                    // test for scattering
+                    match hit.m.scatter(&cur_ray, &hit) {
+                        None => return color,
+                        Some((attenuation, scattered)) => {
+                            // update global attenuation based on current scattered attenuation
+                            // global_attenuation.component_mul_assign(&attenuation);
+                            global_attenuation = global_attenuation.component_mul(&attenuation);
+
+                            // update current ray
+                            cur_ray = scattered;
+                        }
+                    }
+                }
+            }
+        }
+
+        color
     }
 }
