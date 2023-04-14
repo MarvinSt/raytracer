@@ -25,7 +25,7 @@ Open tasks:
     - [x] Medium and volumes
     - [x] Debug fog in final render (now works as expected). 
     - [ ] Polish the demo scene code
-- [ ] Rewrite BVH to work with indices to objects instead of object containers
+- [x] Rewrite BVH to work with indices to objects instead of object containers
 - [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
 - [ ] Implement additional tests for material functions
 # Build and Run
