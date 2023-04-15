@@ -1,4 +1,4 @@
-use crate::{camera::Camera, hit::World};
+use crate::{camera::Camera, hit::Hittable};
 use image::Rgb;
 use nalgebra::Vector3;
 use rand::Rng;
@@ -10,38 +10,47 @@ pub fn get_pixel_color(
     image_height: u32,
     samples_per_pixel: u16,
     cam: &Camera,
-    world: &World,
+    world: &Box<dyn Hittable>,
+    lights: &Box<dyn Hittable>,
     background: &Vector3<f32>,
     max_depth: u8,
     i: u32,
     j: u32,
 ) -> Vector3<f32> {
     let mut rng = rand::thread_rng();
-    let mut color: Vector3<f32> = Vector3::default();
+    let mut color: Vector3<f32> = Vector3::zeros();
 
     // launch parallel iterator
+    let mut pixel_cnt = 0;
     for _ in 0..samples_per_pixel {
         // need a new rng for each thread
         let u = (i as f32 + rng.gen::<f32>()) / (image_width - 1) as f32;
         let v = (j as f32 + rng.gen::<f32>()) / (image_height - 1) as f32;
 
         // accumulate the color for each sample
-        color += &cam.ray(u, v).color_iter(background, &world, max_depth);
+        let new_color = &cam.ray(u, v).color(background, &world, &lights, max_depth);
+
+        // cull pixel colors with nan's components (invalid calculations otherwise show up as black pixels)
+        if !(new_color.x != new_color.x || new_color.y != new_color.y || new_color.z != new_color.z)
+        {
+            color += new_color;
+            pixel_cnt += 1;
+        }
     }
 
     // return the color normalized per sample
-    color / samples_per_pixel as f32
+    color / pixel_cnt.max(1) as f32
 }
 
 pub fn render(
     cam: &Camera,
-    world: &World,
+    world: &Box<dyn Hittable>,
+    lights: &Box<dyn Hittable>,
     background: &Vector3<f32>,
     path: &str,
     samples_per_pixel: u16,
 ) {
     let max_depth = 50;
-    // let samples_per_pixel = 100;
 
     // generate output buffer
     let image_width = 800 as u32;
@@ -63,6 +72,7 @@ pub fn render(
                     samples_per_pixel,
                     &cam,
                     &world,
+                    &lights,
                     &background,
                     max_depth,
                     i,

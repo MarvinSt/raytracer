@@ -1,27 +1,43 @@
-use crate::{hit::HitRecord, ray::Ray, texture::Texture};
-use cgmath::num_traits::abs;
+use crate::{hit::HitRecord, pdf::Pdf, ray::Ray, texture::Texture};
 use nalgebra::Vector3;
 use rand::{distributions::Uniform, prelude::Distribution, Rng};
 
-pub fn random_unit_vector() -> Vector3<f32> {
-    /*
+pub enum ScatterRecord<'a> {
+    Scatter {
+        attenuation: Vector3<f32>,
+        pdf: Pdf<'a>,
+    },
+    Specular {
+        attenuation: Vector3<f32>,
+        specular_ray: Ray,
+    },
+    Isotropic {
+        attenuation: Vector3<f32>,
+        scattered_ray: Ray,
+    },
+}
+
+pub fn random_cosine_direction() -> Vector3<f32> {
     let mut rng = rand::thread_rng();
-    const SCL1: f32 = std::f32::consts::SQRT_2 / 2.0;
-    const SCL2: f32 = std::f32::consts::SQRT_2 * 2.0;
+    let (r1, r2) = rng.gen::<(f32, f32)>();
 
-    // unitrand in [-1,1].
-    let u = SCL1 * rng.gen::<f32>();
-    let v = SCL1 * rng.gen::<f32>();
-    let w = SCL2 * f32::sqrt(1.0 - u * u - v * v);
-
-    let x = w * u;
-    let y = w * v;
-    let z = 1.0 - 2.0 * (u * u + v * v);
+    let phi = 2.0 * std::f32::consts::PI * r1;
+    let x = f32::cos(phi) * f32::sqrt(r2);
+    let y = f32::sin(phi) * f32::sqrt(r2);
+    let z = f32::sqrt(1.0 - r2);
 
     Vector3::new(x, y, z)
-    */
+}
 
-    random_in_unit_sphere().normalize()
+pub fn random_unit_vector() -> Vector3<f32> {
+    let mut rng = rand::thread_rng();
+    let (r1, r2) = rng.gen::<(f32, f32)>();
+
+    let x = f32::cos(2.0 * std::f32::consts::PI * r1) * 2.0 * f32::sqrt(r2 * (1.0 - r2));
+    let y = f32::sin(2.0 * std::f32::consts::PI * r1) * 2.0 * f32::sqrt(r2 * (1.0 - r2));
+    let z = 1.0 - 2.0 * r2;
+
+    Vector3::new(x, y, z)
 }
 
 pub fn random_in_unit_sphere() -> Vector3<f32> {
@@ -43,28 +59,6 @@ pub fn random_in_unit_sphere() -> Vector3<f32> {
             return v;
         }
     }
-
-    /*
-        var u = Math.random();
-        var v = Math.random();
-        var theta = u * 2.0 * Math.PI;
-        var phi = Math.acos(2.0 * v - 1.0);
-        var r = Math.cbrt(Math.random());
-        var sinTheta = Math.sin(theta);
-        var cosTheta = Math.cos(theta);
-        var sinPhi = Math.sin(phi);
-        var cosPhi = Math.cos(phi);
-        var x = r * sinPhi * cosTheta;
-        var y = r * sinPhi * sinTheta;
-        var z = r * cosPhi;
-        return {x: x, y: y, z: z};
-    */
-}
-
-fn near_zero(v: &Vector3<f32>) -> bool {
-    // Return true if the vector is close to zero in all dimensions.
-    const S: f32 = 1e-8;
-    return (abs(v[0]) < S) && (abs(v[1]) < S) && (abs(v[2]) < S);
 }
 
 fn reflect(v: &Vector3<f32>, n: &Vector3<f32>) -> Vector3<f32> {
@@ -90,10 +84,16 @@ fn reflectance(cosine: f32, refraction_ratio: f32) -> f32 {
 }
 
 pub trait Material: Sync {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)>;
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<ScatterRecord> {
+        None
+    }
 
-    fn emitted(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
-        Vector3::zeros()
+    fn scattering_pdf(&self, _rec: &HitRecord, _scattered: &Ray) -> f32 {
+        0.0
+    }
+
+    fn emitted(&self, _rec: &HitRecord) -> Vector3<f32> {
+        Vector3::new(0.0, 0.0, 0.0)
     }
 }
 
@@ -118,40 +118,49 @@ impl<T: Texture> Lambertian<T> {
 }
 
 impl<T: Texture> Material for Lambertian<T> {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
-        let direction: Vector3<f32> = rec.n + random_unit_vector();
-        let scattered = if near_zero(&direction) {
-            Ray::new(rec.p, rec.n)
-        } else {
-            Ray::new(rec.p, direction)
-        };
-        let attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
-        Some((attenuation, scattered))
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
+        // let uvw = Onb::build_from_w(rec.n);
+        // let direction: Vector3<f32> = uvw.local(&random_cosine_direction());
+        // let scattered = Ray::new(rec.p, direction.normalize());
+        let attenuation: Vector3<f32> = self.albedo.value(rec.u, rec.v, &rec.p);
+        let pdf = Pdf::cosine_pdf(rec.n);
+
+        Some(ScatterRecord::Scatter { attenuation, pdf })
+    }
+
+    fn scattering_pdf(&self, rec: &HitRecord, scattered: &Ray) -> f32 {
+        let cosine = f32::max(rec.n.dot(&scattered.nrm_dir), 0.0);
+        cosine / std::f32::consts::PI
     }
 }
 
 #[derive(Clone)]
-pub struct Metal {
-    albedo: Vector3<f32>,
+pub struct Metal<T: Texture> {
+    albedo: T,
     fuzz: f32,
 }
 
-impl Metal {
-    pub fn new(albedo: Vector3<f32>, fuzz: f32) -> Self {
+impl<T: Texture> Metal<T> {
+    pub fn new(albedo: T, fuzz: f32) -> Self {
         Metal { albedo, fuzz }
     }
 }
 
-impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
-        let direction: Vector3<f32> = reflect(&r_in.nrm_dir, &rec.n);
-        let scattered = Ray::new(rec.p, direction + self.fuzz * random_in_unit_sphere());
-        let attenuation = self.albedo;
+impl<T: Texture> Material for Metal<T> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
+        let reflected: Vector3<f32> = reflect(&r_in.nrm_dir, &rec.n);
+        let direction = reflected + self.fuzz * random_in_unit_sphere();
+        let specular_ray = Ray::new(rec.p, direction);
+        let attenuation: Vector3<f32> = self.albedo.value(rec.u, rec.v, &rec.p);
 
-        match scattered.dir.dot(&rec.n) > 0.0 {
-            true => Some((attenuation, scattered)),
-            false => None,
-        }
+        // if direction.dot(&rec.n) > 0.0 {
+        Some(ScatterRecord::Specular {
+            specular_ray,
+            attenuation,
+        })
+        // } else {
+        //     None
+        // }
     }
 }
 
@@ -167,7 +176,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let attenuation = Vector3::new(1.0, 1.0, 1.0);
 
         let refraction_ratio = if rec.front_face {
@@ -190,8 +199,11 @@ impl Material for Dielectric {
                 refract(&unit_dir, &rec.n, cos_theta, refraction_ratio)
             };
 
-        let scattered = Ray::new(rec.p, direction);
-        return Some((attenuation, scattered));
+        let specular_ray = Ray::new(rec.p, direction);
+        Some(ScatterRecord::Specular {
+            specular_ray,
+            attenuation,
+        })
     }
 }
 
@@ -207,12 +219,12 @@ impl<T: Texture> DiffuseLight<T> {
 }
 
 impl<T: Texture> Material for DiffuseLight<T> {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
-        None
-    }
-
-    fn emitted(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
-        self.emit.value(u, v, p)
+    fn emitted(&self, rec: &HitRecord) -> Vector3<f32> {
+        if rec.front_face {
+            self.emit.value(rec.u, rec.v, &rec.p)
+        } else {
+            Vector3::new(0.0, 0.0, 0.0)
+        }
     }
 }
 
@@ -228,9 +240,13 @@ impl<T: Texture> Isotropic<T> {
 }
 
 impl<T: Texture> Material for Isotropic<T> {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vector3<f32>, Ray)> {
-        let scattered = Ray::new(rec.p, random_in_unit_sphere());
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
+        let scattered_ray = Ray::new(rec.p, random_in_unit_sphere());
         let attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
-        Some((attenuation, scattered))
+
+        Some(ScatterRecord::Isotropic {
+            attenuation,
+            scattered_ray,
+        })
     }
 }

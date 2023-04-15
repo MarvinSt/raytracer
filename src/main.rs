@@ -8,6 +8,7 @@ mod instance;
 mod material;
 mod medium;
 mod noise;
+mod pdf;
 mod ray;
 mod renderer;
 mod scene;
@@ -20,16 +21,16 @@ mod geometry {
 }
 
 fn main() {
-    // let samples_per_pixel = 1000;
-    // for i in 0..=7 {
-    //     let (cam, world, background) = select_scene(i);
-    //     let path = format!("./tests/result_{}.png", i);
-    //     render(&cam, &world, &background, &path, samples_per_pixel);
-    // }
+    let samples_per_pixel = 10000;
+    for i in 0..=7 {
+        let (cam, world, lights, background) = select_scene(i);
+        let path = format!("./tests/result_{}.png", i);
+        render(&cam, &world, &lights, &background, &path, samples_per_pixel);
+    }
 
-    let samples_per_pixel = 1000;
-    let i = 1;
-    let (cam, world, background) = select_scene(i);
+    // let samples_per_pixel = 10000;
+    let i = 8;
+    let (cam, world, lights, background) = select_scene(i);
     let path = format!("./tests/result_{}.png", i);
-    render(&cam, &world, &background, &path, samples_per_pixel);
+    render(&cam, &world, &lights, &background, &path, samples_per_pixel);
 }

@@ -69,22 +69,6 @@ impl AABB {
         self.min[axis] + self.max[axis]
     }
 
-    pub fn surrounding_box(box0: &AABB, box1: &AABB) -> Self {
-        let small: Vector3<f32> = Vector3::new(
-            f32::min(box0.min.x, box1.min.x),
-            f32::min(box0.min.y, box1.min.y),
-            f32::min(box0.min.z, box1.min.z),
-        );
-
-        let big: Vector3<f32> = Vector3::new(
-            f32::max(box0.max.x, box1.max.x),
-            f32::max(box0.max.y, box1.max.y),
-            f32::max(box0.max.z, box1.max.z),
-        );
-
-        return AABB::new(small, big);
-    }
-
     pub fn extend_box(&self, aabb: &AABB) -> Self {
         let small: Vector3<f32> = Vector3::new(
             f32::min(self.min.x, aabb.min.x),

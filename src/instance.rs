@@ -5,6 +5,10 @@ use crate::{
 };
 use nalgebra::Vector3;
 
+pub struct FlipFace<H: Hittable> {
+    obj: H,
+}
+
 pub struct Translate<H: Hittable> {
     obj: H,
     offset: Vector3<f32>,
@@ -15,6 +19,12 @@ pub struct Rotate<H: Hittable> {
     sin_theta: f32,
     cos_theta: f32,
     aabb: Option<AABB>,
+}
+
+impl<H: Hittable> FlipFace<H> {
+    pub fn new(obj: H) -> Self {
+        Self { obj }
+    }
 }
 
 impl<H: Hittable> Translate<H> {
@@ -70,6 +80,22 @@ impl<H: Hittable> Rotate<H> {
                 sin_theta,
                 aabb: None,
             },
+        }
+    }
+}
+
+impl<H: Hittable> Hittable for FlipFace<H> {
+    fn bounding_box(&self) -> Option<AABB> {
+        self.obj.bounding_box()
+    }
+
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        match self.obj.hit(&r, t_min, t_max) {
+            None => None,
+            Some(mut hit) => {
+                hit.front_face = !hit.front_face;
+                Some(hit)
+            }
         }
     }
 }

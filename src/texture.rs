@@ -20,7 +20,7 @@ impl SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
+    fn value(&self, _u: f32, _v: f32, _p: &Vector3<f32>) -> Vector3<f32> {
         self.color
     }
 }
@@ -68,7 +68,7 @@ impl Image {
 }
 
 impl Texture for Image {
-    fn value(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
+    fn value(&self, u: f32, v: f32, _p: &Vector3<f32>) -> Vector3<f32> {
         // If we have no texture data, then return solid cyan as a debugging aid.
         if self.data.len() == 0 {
             return Vector3::new(0.0, 1.0, 1.0);
@@ -108,7 +108,7 @@ impl Noise {
 }
 
 impl Texture for Noise {
-    fn value(&self, u: f32, v: f32, p: &Vector3<f32>) -> Vector3<f32> {
+    fn value(&self, _u: f32, _v: f32, p: &Vector3<f32>) -> Vector3<f32> {
         Vector3::new(0.5, 0.5, 0.5)
             * (1.0 + f32::sin(self.scale * p.z + 10.0 * self.noise.turb(&p, 7)))
     }

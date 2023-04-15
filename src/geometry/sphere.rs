@@ -1,8 +1,10 @@
 use crate::bounding_box::AABB;
 use crate::hit::*;
 use crate::material::Material;
+use crate::pdf::Onb;
 use crate::ray::Ray;
 use nalgebra::Vector3;
+use rand::Rng;
 
 #[derive(Copy, Clone)]
 pub struct Sphere<M: Material> {
@@ -97,4 +99,38 @@ impl<M: Material> Hittable for Sphere<M> {
 
         Some(h)
     }
+
+    fn pdf_value(&self, o: Vector3<f32>, v: Vector3<f32>) -> f32 {
+        match self.hit(&Ray::new(o, v), 0.001, f32::MAX) {
+            None => 0.0,
+            Some(_hit) => {
+                let cos_theta_max = f32::sqrt(
+                    1.0 - self.radius * self.radius / (self.center - o).magnitude_squared(),
+                );
+                let solid_angle = 2.0 * std::f32::consts::PI * (1.0 - cos_theta_max);
+
+                1.0 / solid_angle
+            }
+        }
+    }
+
+    fn random(&self, o: Vector3<f32>) -> Vector3<f32> {
+        let direction = self.center - o;
+        let distance_squared = direction.magnitude_squared();
+        let uvw = Onb::build_from_w(direction);
+        uvw.local(&random_to_sphere(self.radius, distance_squared))
+    }
+}
+
+fn random_to_sphere(radius: f32, distance_squared: f32) -> Vector3<f32> {
+    let mut rng = rand::thread_rng();
+    let (r1, r2) = rng.gen::<(f32, f32)>();
+
+    let z = 1.0 + r2 * ((1.0 - radius * radius / distance_squared).sqrt() - 1.0);
+
+    let phi = 2.0 * std::f32::consts::PI * r1;
+    let x = f32::cos(phi) * f32::sqrt(1.0 - z * z);
+    let y = f32::sin(phi) * f32::sqrt(1.0 - z * z);
+
+    Vector3::new(x, y, z)
 }

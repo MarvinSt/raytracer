@@ -13,18 +13,13 @@ This is a personal project to learn `rust` and my first real project in `rust`. 
 # Todo
 
 Open tasks:
-- [x] Continue with the implementations of Book 2
-    - [x] Implement bounding volume hierarchy tree to speed up large scene rendering
-    - [x] Implement texture support for Lambert material:
-        - [x] Rewrite all materials types as trait instead of enum
-        - [x] Implement solid color and checker material
-        - [x] Implement image texture
-    - [x] Implement light emitting material
-    - [x] Box and plane geometry
-    - [x] Instancing (rotation/translation)
-    - [x] Medium and volumes
-    - [x] Debug fog in final render (now works as expected). 
+- [x] Book 2
     - [ ] Polish the demo scene code
+- [x] Book 3
+    - [x] Implement pdf based sampling
+    - [x] Implement sampling from light sources
+    - [x] Update material functions for new sampling method
+    - [x] Remove spickles induced by incorrect color samples (resulting in not-a-number values)
 - [x] Rewrite BVH to work with indices to objects instead of object containers
 - [ ] Create a more organized structure for the different scenes (perhaps serialize to/from JSON)
 - [ ] Implement additional tests for material functions

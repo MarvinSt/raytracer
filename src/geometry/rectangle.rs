@@ -21,17 +21,17 @@ pub struct RectAA<M: Material> {
 }
 
 impl<M: Material> RectAA<M> {
-    pub fn new(plane: Plane, a0: f32, a1: f32, b0: f32, b1: f32, k: f32, material: M) -> Self {
-        Self {
-            plane,
-            a0,
-            a1,
-            b0,
-            b1,
-            k,
-            material,
-        }
-    }
+    // pub fn new(plane: Plane, a0: f32, a1: f32, b0: f32, b1: f32, k: f32, material: M) -> Self {
+    //     Self {
+    //         plane,
+    //         a0,
+    //         a1,
+    //         b0,
+    //         b1,
+    //         k,
+    //         material,
+    //     }
+    // }
 
     pub fn xy(x0: f32, x1: f32, y0: f32, y1: f32, k: f32, material: M) -> Self {
         Self {
@@ -139,5 +139,39 @@ impl<M: Material> Hittable for RectAA<M> {
         h.set_face_normal(r, &on);
 
         Some(h)
+    }
+
+    fn pdf_value(&self, origin: Vector3<f32>, direction: Vector3<f32>) -> f32 {
+        match self.hit(&Ray::new(origin, direction), 0.001, f32::MAX) {
+            None => 0.0,
+            Some(hit) => {
+                let area = (self.a1 - self.a0) * (self.b1 - self.b0);
+                let distance_squared = hit.t * hit.t * direction.magnitude_squared();
+                let cosine = direction.dot(&hit.n).abs() / direction.magnitude();
+                distance_squared / (cosine * area)
+            }
+        }
+    }
+
+    fn random(&self, origin: Vector3<f32>) -> Vector3<f32> {
+        let random_point = match &self.plane {
+            Plane::XY => Vector3::new(
+                random_double(self.a0, self.a1),
+                random_double(self.b0, self.b1),
+                self.k,
+            ),
+            Plane::XZ => Vector3::new(
+                random_double(self.a0, self.a1),
+                self.k,
+                random_double(self.b0, self.b1),
+            ),
+            Plane::YZ => Vector3::new(
+                self.k,
+                random_double(self.a0, self.a1),
+                random_double(self.b0, self.b1),
+            ),
+        };
+
+        random_point - origin
     }
 }
